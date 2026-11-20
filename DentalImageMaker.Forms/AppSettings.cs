@@ -28,8 +28,17 @@ public sealed class AppSettings
     /// <summary>프롬프트에 치과위생사 묘사를 넣을지. 위생사가 안 나오는 장면도 많아서 기본은 끈다.</summary>
     public bool IncludeHygienist { get; set; }
 
+    /// <summary>프롬프트에 환자 설정을 넣을지. 칸마다 기본이 '지정 안 함'이라 켜 둬도 고른 것만 붙는다.</summary>
+    public bool IncludePatient { get; set; } = true;
+
     /// <summary>인물 설정 칸에서 고른 값(칸 Id → 선택지 Key). 다음 실행에도 같은 주인공으로 시작한다.</summary>
     public Dictionary<string, string> SlotSelections { get; set; } = [];
+
+    /// <summary>치식 차트(FDI 번호 → 상태 Key). 정상인 치아는 저장하지 않는다.</summary>
+    public Dictionary<int, string> ToothChart { get; set; } = [];
+
+    /// <summary>'내용' 칸에서 규칙으로 추가한 사용자 규칙. 기본 규칙 뒤에 붙는다.</summary>
+    public List<CustomRule> CustomRules { get; set; } = [];
 
     /// <summary>대기열이 연속으로 이만큼 실패하면 한도에 걸린 것으로 보고 멈춘다.</summary>
     public int MaxConsecutiveFailures { get; set; } = 3;
@@ -73,4 +82,11 @@ public sealed class AppSettings
             // 저장 실패는 무시(이번 실행에만 적용된다).
         }
     }
+}
+
+/// <summary>사용자가 직접 추가한 규칙 한 줄(켜짐 여부까지 저장).</summary>
+public sealed class CustomRule
+{
+    public string Text { get; set; } = "";
+    public bool IsOn { get; set; } = true;
 }

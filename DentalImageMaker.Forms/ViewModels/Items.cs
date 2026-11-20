@@ -6,12 +6,33 @@ using DentalImageMaker.Main.Prompts;
 namespace DentalImageMaker.Forms.ViewModels;
 
 /// <summary>체크박스로 켜고 끄는 도메인 규칙 한 줄.</summary>
-public partial class RuleOption(PromptRule rule) : ObservableObject
+public partial class RuleOption(PromptRule rule, bool isCustom = false, bool? isOn = null) : ObservableObject
 {
     public PromptRule Rule { get; } = rule;
 
+    /// <summary>'내용' 칸에서 사용자가 추가한 규칙이면 true(삭제 가능, 설정에 저장).</summary>
+    public bool IsCustom { get; } = isCustom;
+
+    /// <summary>진료 중 전용 규칙은 ★ 를 붙여 보여 준다.</summary>
+    public string DisplayName => Rule.TreatmentOnly ? "★ " + Rule.Name : Rule.Name;
+
     [ObservableProperty]
-    private bool _isOn = rule.DefaultOn;
+    private bool _isOn = isOn ?? rule.DefaultOn;
+}
+
+/// <summary>치식 차트의 치아 한 칸(FDI 번호 + 상태). 눌러서 고른 뒤 상태 칩을 누르면 바뀐다.</summary>
+public partial class ToothItem(int number) : ObservableObject
+{
+    public int Number { get; } = number;
+
+    public string ToolTip => DentalChart.KoreanName(Number) + (Condition == DentalChart.Normal ? "" : " — " + Condition.Name);
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToolTip))]
+    private ToothCondition _condition = DentalChart.Normal;
+
+    [ObservableProperty]
+    private bool _isSelected;
 }
 
 public enum JobStatus
@@ -31,6 +52,9 @@ public partial class QueueItem : ObservableObject
     public GenerationKind Kind { get; init; }
     public bool NewChat { get; init; } = true;
     public IReadOnlyList<string> References { get; init; } = [];
+
+    /// <summary>대기열에 넣을 때 고른 카메라 구도 선택지 키. 예제가 없는 선택지는 생성 결과가 예제로 등록된다.</summary>
+    public IReadOnlyList<string> ExampleKeys { get; init; } = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]

@@ -27,25 +27,34 @@ public partial class MainWindowViewModel : ObservableObject
         _settings = settings;
 
         Rules = new(PromptLibrary.Rules.Select(r => new RuleOption(r)));
+        foreach (var custom in settings.CustomRules.Where(c => !string.IsNullOrWhiteSpace(c.Text)))
+            Rules.Add(new RuleOption(new PromptRule(custom.Text, custom.Text, true), isCustom: true, isOn: custom.IsOn));
         foreach (var rule in Rules)
-            rule.PropertyChanged += (_, _) => OnPropertyChanged(nameof(FinalPrompt));
+            HookRule(rule);
         // 저장해 둔 주인공·위생사 설정을 되살린다(헤어는 성별에 맞는 목록을 먼저 고른다).
         _includeDentist = settings.IncludeDentist;
         _includeHygienist = settings.IncludeHygienist;
+        _includePatient = settings.IncludePatient;
         _dentistGender.SelectByKey(settings.SlotSelections.GetValueOrDefault(_dentistGender.Id));
         _hygienistGender.SelectByKey(settings.SlotSelections.GetValueOrDefault(_hygienistGender.Id));
         SyncHairOptions();
-        foreach (var slot in DentistSlots.Concat(HygienistSlots))
+        foreach (var slot in CharacterSlots)
             slot.SelectByKey(settings.SlotSelections.GetValueOrDefault(slot.Id));
 
-        foreach (var slot in CameraSlots.Concat(DentistSlots).Concat(HygienistSlots))
+        foreach (var tooth in AllTeeth)
+        {
+            var key = settings.ToothChart.GetValueOrDefault(tooth.Number);
+            tooth.Condition = DentalChart.Conditions.FirstOrDefault(c => c.Key == key && !string.IsNullOrEmpty(key)) ?? DentalChart.Normal;
+        }
+
+        foreach (var slot in AllSlots)
             slot.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName != nameof(OptionSlot.Selected))
                     return;
                 if (slot == _dentistGender || slot == _hygienistGender)
                     SyncHairOptions();
-                if (DentistSlots.Contains(slot) || HygienistSlots.Contains(slot))
+                if (CharacterSlots.Contains(slot))
                     SaveCharacter();
                 OnPropertyChanged(nameof(FinalPrompt));
             };
@@ -105,6 +114,8 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly OptionSlot _hygienistGender = new("hygienist.gender", "성별·나이", PromptLibrary.HygienistGenders) { Group = "치과위생사", Subject = Hygienist };
     private readonly OptionSlot _hygienistHair = new("hygienist.hair", "헤어", PromptLibrary.HygienistFemaleHairs) { Group = "치과위생사", Subject = Hygienist };
 
+    private readonly OptionSlot _dentistCoat = new("dentist.coat", "가운", PromptLibrary.DentistCoats) { Group = "치과의사", Subject = Dentist };
+    private readonly OptionSlot _dentistCoatColor = new("dentist.coat_color", "가운 색상", PromptLibrary.DentistCoatColors) { Group = "치과의사", Subject = Dentist };
     private IReadOnlyList<OptionSlot>? _dentistSlots;
     private IReadOnlyList<OptionSlot>? _hygienistSlots;
 
@@ -113,7 +124,9 @@ public partial class MainWindowViewModel : ObservableObject
     [
         _dentistGender,
         _dentistHair,
-        new("dentist.outfit", "복장", PromptLibrary.DentistOutfits) { Group = "치과의사", Subject = Dentist },
+        _dentistCoat,
+        _dentistCoatColor,
+        new("dentist.scrubs", "스크럽 색상", PromptLibrary.DentistScrubs) { Group = "치과의사", Subject = Dentist },
         new("dentist.mask", "마스크", PromptLibrary.DentistMasks) { Group = "치과의사", Subject = Dentist },
         new("dentist.accessory", "안경·장신구", PromptLibrary.DentistAccessories) { Group = "치과의사", Subject = Dentist },
     ];
@@ -126,6 +139,138 @@ public partial class MainWindowViewModel : ObservableObject
         new("hygienist.mask", "마스크", PromptLibrary.DentistMasks) { Group = "치과위생사", Subject = Hygienist },
         new("hygienist.accessory", "안경·장신구", PromptLibrary.HygienistAccessories) { Group = "치과위생사", Subject = Hygienist },
     ];
+
+    private const string Patient = "The patient";
+
+    private readonly OptionSlot _patientTeeth = new("patient.teeth", "구강 상태", PromptLibrary.PatientTeeth) { Group = "환자", Subject = Patient };
+    private readonly OptionSlot _patientGender = new("patient.gender", "성별·나이", PromptLibrary.PatientGenders) { Group = "환자", Subject = Patient };
+    private readonly OptionSlot _patientHair = new("patient.hair", "헤어", PromptLibrary.PatientHairs) { Group = "환자", Subject = Patient };
+    private readonly OptionSlot _patientOutfit = new("patient.outfit", "옷", PromptLibrary.PatientOutfits) { Group = "환자", Subject = Patient };
+    private IReadOnlyList<OptionSlot>? _patientSlots;
+
+    /// <summary>환자. 모든 칸의 기본값은 '지정 안 함'이라 고른 것만 프롬프트에 붙는다.</summary>
+    public IReadOnlyList<OptionSlot> PatientSlots => _patientSlots ??=
+    [
+        _patientGender,
+        _patientHair,
+        _patientOutfit,
+        new("patient.cover", "bib·덮개", PromptLibrary.PatientCovers) { Group = "환자", Subject = Patient },
+        new("patient.state", "자세·표정", PromptLibrary.PatientStates) { Group = "환자", Subject = Patient },
+        _patientTeeth,
+    ];
+
+    private readonly OptionSlot _situation = new("treatment.situation", "진료 상황", PromptLibrary.Situations) { Group = "진료 내용" };
+    private IReadOnlyList<OptionSlot>? _treatmentSlots;
+
+    /// <summary>상담·양치·접수처럼 진료 중이 아닌 상황을 골랐는지. 이때 진료용 규칙은 빠진다.</summary>
+    public bool IsNonTreatmentSituation =>
+        _situation.IsSet && _situation.Selected.Key != PromptLibrary.TreatmentSituationKey;
+
+    /// <summary>무슨 치료를 어느 치아에 하는지. 입안 장면은 이게 구체적이어야 잘 나온다.</summary>
+    public IReadOnlyList<OptionSlot> TreatmentSlots => _treatmentSlots ??=
+    [
+        _situation,
+        new("treatment.kind", "치료 종류", PromptLibrary.Treatments) { Group = "진료 내용" },
+        new("treatment.tooth", "치아 위치", PromptLibrary.ToothPositions) { Group = "진료 내용" },
+        new("treatment.detail", "입안 디테일", PromptLibrary.IntraoralDetails) { Group = "진료 내용" },
+        new("room.chair", "유니트 체어 색상", PromptLibrary.ChairColors) { Group = "진료실" },
+        new("room.recline", "체어 등받이 각도", PromptLibrary.ChairRecline) { Group = "진료실" },
+    ];
+
+    /// <summary>settings.json 에 저장하는 칸(인물·진료). 카메라 구도는 매번 고른다.</summary>
+    private IEnumerable<OptionSlot> CharacterSlots =>
+        DentistSlots.Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots);
+
+    private IEnumerable<OptionSlot> AllSlots => CameraSlots.Concat(CharacterSlots);
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinalPrompt))]
+    private bool _includePatient;
+
+    // ---------- 치식 차트 ----------
+    // 화면 배치는 진료 차트와 같다: 환자 오른쪽이 화면 왼쪽. 위 18…11 | 21…28, 아래 48…41 | 31…38.
+
+    public IReadOnlyList<ToothItem> UpperRightTeeth { get; } = DentalChart.UpperRight.Select(n => new ToothItem(n)).ToList();
+    public IReadOnlyList<ToothItem> UpperLeftTeeth { get; } = DentalChart.UpperLeft.Select(n => new ToothItem(n)).ToList();
+    public IReadOnlyList<ToothItem> LowerRightTeeth { get; } = DentalChart.LowerRight.Select(n => new ToothItem(n)).ToList();
+    public IReadOnlyList<ToothItem> LowerLeftTeeth { get; } = DentalChart.LowerLeft.Select(n => new ToothItem(n)).ToList();
+
+    private IEnumerable<ToothItem> AllTeeth => UpperRightTeeth.Concat(UpperLeftTeeth).Concat(LowerLeftTeeth).Concat(LowerRightTeeth);
+
+    public IReadOnlyList<ToothCondition> ToothConditions => DentalChart.Conditions;
+
+    /// <summary>정상이 아닌 치아 목록(한국어). 차트 아래에 보여 준다.</summary>
+    public string ToothChartSummary
+    {
+        get
+        {
+            var lines = AllTeeth.Where(t => t.Condition != DentalChart.Normal)
+                .OrderBy(t => t.Number)
+                .Select(t => $"{DentalChart.KoreanName(t.Number)}: {t.Condition.Name}")
+                .ToList();
+            return lines.Count == 0 ? "치아를 눌러 고른 뒤(여러 개 가능) 아래 상태를 누르세요." : string.Join(Environment.NewLine, lines);
+        }
+    }
+
+    [RelayCommand]
+    private void ToggleTooth(ToothItem tooth) => tooth.IsSelected = !tooth.IsSelected;
+
+    /// <summary>고른 치아들에 상태를 넣고 선택을 푼다.</summary>
+    [RelayCommand]
+    private void ApplyToothCondition(ToothCondition condition)
+    {
+        var selected = AllTeeth.Where(t => t.IsSelected).ToList();
+        if (selected.Count == 0)
+        {
+            Status = "먼저 치식 차트에서 치아를 눌러 고르세요.";
+            return;
+        }
+        foreach (var tooth in selected)
+        {
+            tooth.Condition = condition;
+            tooth.IsSelected = false;
+        }
+        OnToothChartChanged();
+    }
+
+    [RelayCommand]
+    private void ClearToothChart()
+    {
+        foreach (var tooth in AllTeeth)
+        {
+            tooth.Condition = DentalChart.Normal;
+            tooth.IsSelected = false;
+        }
+        OnToothChartChanged();
+    }
+
+    private void OnToothChartChanged()
+    {
+        _settings.ToothChart = AllTeeth.Where(t => t.Condition != DentalChart.Normal)
+            .ToDictionary(t => t.Number, t => t.Condition.Key);
+        _settings.Save();
+        OnPropertyChanged(nameof(ToothChartSummary));
+        OnPropertyChanged(nameof(FinalPrompt));
+    }
+
+    private string ToothChartSentence() =>
+        DentalChart.BuildSentence(AllTeeth.OrderBy(t => t.Number).Select(t => (t.Number, t.Condition)));
+
+    partial void OnIncludePatientChanged(bool value) => SaveCharacter();
+
+    [RelayCommand]
+    private void ResetPatient()
+    {
+        foreach (var slot in PatientSlots)
+            slot.Selected = slot.Options[0];
+    }
+
+    [RelayCommand]
+    private void ResetTreatment()
+    {
+        foreach (var slot in TreatmentSlots)
+            slot.Selected = slot.Options[0];
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FinalPrompt))]
@@ -152,7 +297,8 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _settings.IncludeDentist = IncludeDentist;
         _settings.IncludeHygienist = IncludeHygienist;
-        foreach (var slot in DentistSlots.Concat(HygienistSlots))
+        _settings.IncludePatient = IncludePatient;
+        foreach (var slot in CharacterSlots)
             _settings.SlotSelections[slot.Id] = slot.Selected.Key;
         _settings.Save();
     }
@@ -195,10 +341,27 @@ public partial class MainWindowViewModel : ObservableObject
         var window = new OptionPickerWindow(slot, OutputFolder) { Owner = System.Windows.Application.Current.MainWindow };
         var picked = window.ShowDialog() == true ? window.Picked : null;
         if (window.ExamplesChanged)
-            foreach (var s in CameraSlots.Concat(DentistSlots).Concat(HygienistSlots))
+            foreach (var s in AllSlots)
                 s.RefreshThumbnail();
         if (picked is not null)
             slot.Selected = picked;
+    }
+
+    /// <summary>예제 그림이 없는 카메라 구도 선택지에 방금 받은 첫 그림을 예제로 넣는다.</summary>
+    private void AddMissingExamples(QueueItem item, IEnumerable<string> files)
+    {
+        if (item.Kind != GenerationKind.Image || item.ExampleKeys.Count == 0)
+            return;
+        var image = files.FirstOrDefault(f =>
+            Path.GetExtension(f).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg" or ".webp");
+        if (image is null)
+            return;
+
+        var added = item.ExampleKeys.Where(k => ExampleStore.AddIfMissing(k, image)).ToList();
+        if (added.Count == 0)
+            return;
+        foreach (var s in AllSlots)
+            s.RefreshThumbnail();
     }
 
     [RelayCommand]
@@ -211,15 +374,51 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>프롬프트에 붙일 인물·카메라 문장. 인물이 먼저, 카메라가 뒤.</summary>
     private IEnumerable<string> OptionSentences()
     {
-        if (IncludeDentist)
-            foreach (var slot in DentistSlots)
-                yield return slot.PromptText;
-        if (IncludeHygienist)
-            foreach (var slot in HygienistSlots)
-                yield return slot.PromptText;
+        // 진료 내용·구강 상태를 먼저 둬야 모델이 '무엇을 그리는지'를 놓치지 않는다.
+        foreach (var slot in TreatmentSlots)
+            yield return slot.PromptText;
+        if (IncludePatient)
+        {
+            yield return _patientTeeth.PromptText;
+            yield return ToothChartSentence();
+        }
+
+        // 입안 클로즈업에서는 얼굴·머리·복장 묘사가 넓은 구도를 불러오므로 뺀다(손·기구·치아만 보이는 장면).
+        if (!IsIntraoral)
+        {
+            if (IncludeDentist)
+                foreach (var slot in DentistSlots)
+                {
+                    // 가운을 안 입으면 가운 색상 문장은 모순이라 뺀다.
+                    if (slot == _dentistCoatColor && _dentistCoat.Selected.Key == PromptLibrary.NoCoatKey)
+                        continue;
+                    yield return slot.PromptText;
+                }
+            if (IncludeHygienist)
+                foreach (var slot in HygienistSlots)
+                    yield return slot.PromptText;
+            if (IncludePatient)
+            {
+                // 첨부 이미지의 환자를 쓰면 헤어·옷은 사진 그대로 — 다른 묘사가 섞이면 옷이 바뀐다.
+                var fromReference = _patientGender.Selected.Key == PromptLibrary.PatientFromReferenceKey;
+                foreach (var slot in PatientSlots.Where(s => s != _patientTeeth))
+                {
+                    if (fromReference && (slot == _patientHair || slot == _patientOutfit))
+                        continue;
+                    yield return slot.PromptText;
+                }
+            }
+        }
+
         foreach (var slot in CameraSlots.Where(s => !s.VideoOnly || IsVideoKind))
             yield return slot.PromptText;
     }
+
+    /// <summary>입안 클로즈업 장면인지: 샷 크기가 ECU 이거나 장면 프리셋이 구강 내부/입안 장면.</summary>
+    private bool IsIntraoral =>
+        CameraSlots.Any(s => s.Selected.Key == "shot.ecu")
+        || SelectedScene?.Name.Contains("구강 내부", StringComparison.Ordinal) == true
+        || SelectedScene?.Name.Contains("입안", StringComparison.Ordinal) == true;
 
     partial void OnIsVideoKindChanged(bool value)
     {
@@ -271,7 +470,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     public string FinalPrompt => PromptBuilder.Build(
         Kind, ContinueChat, SelectedStyle, SelectedScene, SelectedAspect,
-        Rules.Where(r => r.IsOn).Select(r => r.Rule), FreeText, OptionSentences());
+        Rules.Where(r => r.IsOn && !(r.Rule.TreatmentOnly && IsNonTreatmentSituation)).Select(r => r.Rule),
+        FreeText, OptionSentences());
 
     /// <summary>MainWindow 가 화면 전환(브라우저 보이기)을 처리하도록 알린다.</summary>
     public event Action<AiProvider>? ProviderShown;
@@ -311,6 +511,71 @@ public partial class MainWindowViewModel : ObservableObject
     {
         FreeText = string.IsNullOrWhiteSpace(FreeText) ? chip : FreeText.TrimEnd() + ", " + chip;
         ContinueChat = true;
+    }
+
+    private void HookRule(RuleOption rule)
+    {
+        rule.PropertyChanged += (_, _) =>
+        {
+            if (rule.IsCustom)
+                SaveCustomRules();
+            OnPropertyChanged(nameof(FinalPrompt));
+        };
+    }
+
+    private void SaveCustomRules()
+    {
+        _settings.CustomRules = Rules.Where(r => r.IsCustom)
+            .Select(r => new CustomRule { Text = r.Rule.Text, IsOn = r.IsOn })
+            .ToList();
+        _settings.Save();
+    }
+
+    /// <summary>'내용' 칸의 줄마다 사용자 규칙으로 추가하고 칸을 비운다(같은 문장이 두 번 붙지 않게).</summary>
+    [RelayCommand]
+    private void AddFreeTextToRules()
+    {
+        var lines = (FreeText ?? "")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(l => l.Length > 0)
+            .Distinct()
+            .ToList();
+        if (lines.Count == 0)
+        {
+            Status = "규칙으로 추가할 내용이 없습니다.";
+            return;
+        }
+
+        var added = 0;
+        foreach (var line in lines)
+        {
+            var existing = Rules.FirstOrDefault(r => r.Rule.Text == line);
+            if (existing is not null)
+            {
+                existing.IsOn = true;
+                continue;
+            }
+
+            var rule = new RuleOption(new PromptRule(line, line, true), isCustom: true, isOn: true);
+            HookRule(rule);
+            Rules.Add(rule);
+            added++;
+        }
+
+        SaveCustomRules();
+        FreeText = "";
+        Status = $"규칙 {added}개를 추가했습니다.";
+        OnPropertyChanged(nameof(FinalPrompt));
+    }
+
+    [RelayCommand]
+    private void RemoveRule(RuleOption rule)
+    {
+        if (!rule.IsCustom)
+            return;
+        Rules.Remove(rule);
+        SaveCustomRules();
+        OnPropertyChanged(nameof(FinalPrompt));
     }
 
     [RelayCommand]
@@ -427,9 +692,23 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void CopyPrompt() => System.Windows.Clipboard.SetText(FinalPrompt);
 
+    /// <summary>'첨부 이미지의 환자'를 골랐는데 첨부가 없으면 보내지 않는다(이어서 보내기는 이전 그림을 쓰므로 허용).</summary>
+    private bool CheckPatientReference()
+    {
+        if (IncludePatient && !ContinueChat && References.Count == 0
+            && _patientGender.Selected.Key == PromptLibrary.PatientFromReferenceKey)
+        {
+            Status = "환자를 '첨부 이미지의 환자'로 골랐습니다. 참고 이미지에 환자 사진을 첨부해 주세요.";
+            return false;
+        }
+        return true;
+    }
+
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task GenerateAsync()
     {
+        if (!CheckPatientReference())
+            return;
         var item = CreateQueueItem();
         await RunItemsAsync([item]);
     }
@@ -437,6 +716,8 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void AddToQueue()
     {
+        if (!CheckPatientReference())
+            return;
         Queue.Add(CreateQueueItem());
         Status = $"대기열 {Queue.Count(q => q.Status == JobStatus.Waiting)}건";
     }
@@ -507,6 +788,11 @@ public partial class MainWindowViewModel : ObservableObject
             Kind = Kind,
             NewChat = !ContinueChat,
             References = References.ToList(),
+            ExampleKeys = CameraSlots.Concat(TreatmentSlots.Where(s => !s.Id.StartsWith("room.", StringComparison.Ordinal)))
+                .Where(s => s.IsVisible && s.IsSet)
+                .Select(s => s.Selected.Key)
+                .Where(k => !string.IsNullOrEmpty(k))
+                .ToList(),
         };
     }
 
@@ -555,6 +841,7 @@ public partial class MainWindowViewModel : ObservableObject
                     item.Message = string.Join(", ", result.Files.Select(f => Path.GetFileName(f)));
                     foreach (var file in result.Files)
                         Results.Insert(0, new ResultItem(file, item.Provider, item.Prompt));
+                    AddMissingExamples(item, result.Files);
                     failures = 0;
                     // 다음 항목이 이어서 보내기라면 방금 받은 채팅에 이어진다.
                 }

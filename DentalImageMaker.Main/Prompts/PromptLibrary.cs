@@ -9,7 +9,8 @@ public sealed record PromptPreset(string Name, string Before, string After = "",
     public override string ToString() => Name;
 }
 
-public sealed record PromptRule(string Name, string Text, bool DefaultOn);
+/// <summary>TreatmentOnly: 진료 중 장면에만 맞는 규칙(핸드피스·입 벌림 등). 상담·양치 같은 상황에서는 자동으로 빠진다.</summary>
+public sealed record PromptRule(string Name, string Text, bool DefaultOn, bool TreatmentOnly = false);
 
 public sealed record AspectRatio(string Name, string Text)
 {
@@ -70,20 +71,46 @@ public static class PromptLibrary
         new("hair.m_long_bangs", "긴 앞머리", "{who}'s hair: long bangs falling over the forehead."),
     ];
 
-    public static IReadOnlyList<PromptOption> DentistOutfits { get; } =
+    // 복장은 가운 종류 · 가운 색상 · 스크럽 색상을 따로 고른다(첫 항목이 기본: 긴 흰 가운 + 네이비 스크럽).
+    public const string NoCoatKey = "coat.none";
+
+    public static IReadOnlyList<PromptOption> DentistCoats { get; } =
     [
-        new("outfit.coat_navy", "흰 가운 + 네이비 스크럽", "{who} wears a white doctor's coat over navy scrubs."),
-        new("outfit.coat_lightblue", "흰 가운 + 하늘색 스크럽", "{who} wears a white doctor's coat over light blue scrubs."),
-        new("outfit.navy_scrubs", "네이비 스크럽만", "{who} wears navy scrubs without a coat."),
-        new("outfit.lavender_scrubs", "라벤더 스크럽", "{who} wears a lavender scrub top."),
-        new("outfit.mint_scrubs", "민트 스크럽", "{who} wears mint scrubs."),
-        new("outfit.black_scrubs", "블랙 스크럽", "{who} wears a black scrub top."),
-        new("outfit.coat_mint", "흰 가운 + 민트 스크럽", "{who} wears a white doctor's coat over mint scrubs."),
-        new("outfit.green_surgical", "초록 수술복", "{who} wears green surgical scrubs."),
-        new("outfit.short_gown", "흰 실습 가운 (짧은)", "{who} wears a short white dental practice gown over navy scrubs."),
-        new("outfit.wine_scrubs", "와인 스크럽", "{who} wears a wine-red scrub top."),
-        new("outfit.gray_scrubs", "그레이 스크럽", "{who} wears charcoal gray scrubs."),
-        new("outfit.surgical_cap", "수술복 + 수술 모자", "{who} wears teal surgical scrubs and a matching surgical cap."),
+        new("coat.long", "긴 닥터 가운 (무릎)", "{who} wears a long knee-length doctor's coat with lapels, buttoned, over scrubs."),
+        new("coat.short", "짧은 가운 (허리)", "{who} wears a short hip-length dental gown over scrubs."),
+        new("coat.short_sleeve", "반팔 가운", "{who} wears a short-sleeved doctor's coat over scrubs."),
+        new("coat.mandarin", "차이나 칼라 가운", "{who} wears a modern dental tunic gown with a mandarin stand-up collar and side buttons."),
+        new("coat.open", "가운 단추 풀어 입음", "{who} wears a doctor's coat open and unbuttoned over scrubs."),
+        new("coat.surgical", "일회용 수술 가운", "{who} wears a disposable surgical gown tied at the back over scrubs."),
+        new(NoCoatKey, "가운 없음 (스크럽만)", "{who} wears scrubs only, without a coat."),
+    ];
+
+    public static IReadOnlyList<PromptOption> DentistCoatColors { get; } =
+    [
+        new("coatcolor.white", "흰색", "{who}'s coat is crisp white."),
+        new("coatcolor.ivory", "아이보리", "{who}'s coat is soft ivory."),
+        new("coatcolor.skyblue", "하늘색", "{who}'s coat is light sky blue."),
+        new("coatcolor.navy", "네이비", "{who}'s coat is dark navy blue."),
+        new("coatcolor.mint", "민트", "{who}'s coat is pale mint green."),
+        new("coatcolor.pink", "핑크", "{who}'s coat is pastel pink."),
+        new("coatcolor.lavender", "라벤더", "{who}'s coat is lavender."),
+        new("coatcolor.gray", "그레이", "{who}'s coat is light gray."),
+        new("coatcolor.black", "블랙", "{who}'s coat is black."),
+    ];
+
+    public static IReadOnlyList<PromptOption> DentistScrubs { get; } =
+    [
+        new("scrubs.navy", "네이비", "{who}'s scrubs are navy blue."),
+        new("scrubs.skyblue", "하늘색", "{who}'s scrubs are light blue."),
+        new("scrubs.mint", "민트", "{who}'s scrubs are mint green."),
+        new("scrubs.teal", "청록 (틸)", "{who}'s scrubs are teal."),
+        new("scrubs.green", "초록 수술복", "{who}'s scrubs are green surgical scrubs."),
+        new("scrubs.lavender", "라벤더", "{who}'s scrubs are lavender."),
+        new("scrubs.pink", "핑크", "{who}'s scrubs are soft pink."),
+        new("scrubs.wine", "와인", "{who}'s scrubs are wine red."),
+        new("scrubs.gray", "그레이", "{who}'s scrubs are charcoal gray."),
+        new("scrubs.black", "블랙", "{who}'s scrubs are black."),
+        new("scrubs.white", "화이트", "{who}'s scrubs are white."),
     ];
 
     public static IReadOnlyList<PromptOption> DentistMasks { get; } =
@@ -153,6 +180,182 @@ public static class PromptLibrary
         new("hygacc.cap", "수술 모자", "{who} wears a light blue surgical cap."),
         new("hygacc.faceshield", "페이스 쉴드 (올림)", "{who} has a clear face shield pushed up on the head."),
         new("hygacc.lanyard", "목걸이 이름표", "{who} wears a lanyard with a blank name badge."),
+    ];
+
+    // ---------- 환자 ----------
+    // {who} 는 "The patient" 로 바뀐다. 모든 칸의 첫 항목은 '지정 안 함'(문장 없음).
+
+    /// <summary>첨부 이미지의 환자를 그대로 쓰는 선택지. 고르면 헤어·옷 칸은 무시한다.</summary>
+    public const string PatientFromReferenceKey = "patient.reference";
+
+    public static IReadOnlyList<PromptOption> PatientGenders { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new(PatientFromReferenceKey, "첨부 이미지의 환자 (옷 포함)",
+            "The patient must be exactly the same person as in the attached reference image: keep the identical face, age, hairstyle, body type and the exact same clothing and its colors. Do not change the patient's outfit."),
+        new("patient.child_f", "어린이 여자 (7–10세)", "The patient is a Korean girl about 7–10 years old."),
+        new("patient.child_m", "어린이 남자 (7–10세)", "The patient is a Korean boy about 7–10 years old."),
+        new("patient.teen_f", "10대 여학생", "The patient is a Korean teenage girl."),
+        new("patient.teen_m", "10대 남학생", "The patient is a Korean teenage boy."),
+        new("patient.f20", "20대 여성", "The patient is a young Korean woman in her 20s."),
+        new("patient.m20", "20대 남성", "The patient is a young Korean man in his 20s."),
+        new("patient.f30", "30–40대 여성", "The patient is a Korean woman in her 30s or 40s."),
+        new("patient.m30", "30–40대 남성", "The patient is a Korean man in his 30s or 40s."),
+        new("patient.f50", "50–60대 여성", "The patient is a middle-aged Korean woman in her 50s or 60s."),
+        new("patient.m50", "50–60대 남성", "The patient is a middle-aged Korean man in his 50s or 60s."),
+        new("patient.grandma", "70대 할머니", "The patient is an elderly Korean grandmother in her 70s with gray hair."),
+        new("patient.grandpa", "70대 할아버지", "The patient is an elderly Korean grandfather in his 70s with gray hair."),
+    ];
+
+    public static IReadOnlyList<PromptOption> PatientHairs { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("phair.long", "긴 생머리", "{who} has long straight dark hair spread on the headrest."),
+        new("phair.bob", "단발", "{who} has a short bob haircut."),
+        new("phair.tied", "묶은 머리", "{who}'s hair is tied back."),
+        new("phair.wavy", "웨이브 긴 머리", "{who} has long wavy brown hair."),
+        new("phair.short", "짧은 머리 (남)", "{who} has short neat black hair."),
+        new("phair.perm", "뽀글 파마", "{who} has short permed hair."),
+        new("phair.gray", "흰머리", "{who} has short gray hair."),
+    ];
+
+    public static IReadOnlyList<PromptOption> PatientOutfits { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("poutfit.navy", "네이비 긴팔 + 어두운 바지", "{who} wears a dark navy long-sleeved top and dark trousers."),
+        new("poutfit.knit", "아이보리 니트", "{who} wears a cozy ivory knit sweater and jeans."),
+        new("poutfit.hoodie", "후드티", "{who} wears a gray hoodie."),
+        new("poutfit.shirt", "셔츠 (직장인)", "{who} wears a white office shirt and slacks."),
+        new("poutfit.uniform", "교복", "{who} wears a Korean school uniform."),
+        new("poutfit.cardigan", "카디건", "{who} wears a soft beige cardigan."),
+    ];
+
+    public static IReadOnlyList<PromptOption> PatientCovers { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("pcover.bib_green", "초록 bib", "A green disposable dental bib covers {who}'s chest."),
+        new("pcover.bib_blue", "하늘색 bib", "A light blue disposable dental bib covers {who}'s chest."),
+        new("pcover.drape", "초록 소공포 + bib", "{who}'s face is covered by a green dental drape with an opening only around the mouth, and a dental bib covers the chest."),
+        new("pcover.glasses", "환자 보안경", "{who} wears clear protective safety glasses."),
+    ];
+
+    public static IReadOnlyList<PromptOption> PatientStates { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("pstate.wide", "눈 감고 입 크게", "{who} lies fully reclined with eyes closed and mouth opened as wide as possible."),
+        new("pstate.tense", "긴장 (손 꽉 쥠)", "{who} looks tense, eyebrows raised, hands tightly clasped on the stomach, mouth wide open."),
+        new("pstate.relaxed", "편안함", "{who} lies relaxed and calm with mouth open."),
+        new("pstate.scared", "겁먹은 표정", "{who} looks scared with teary eyes, gripping the armrest."),
+        new("pstate.looking", "눈 뜨고 의사 봄", "{who} has eyes open, looking up at the dentist."),
+        new("pstate.sitting", "앉아서 상담", "{who} sits upright in the dental chair, mouth closed, listening to the dentist."),
+    ];
+
+    public static IReadOnlyList<PromptOption> PatientTeeth { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("teeth.caries", "어금니 충치 (갈색·검은 점)", "Oral condition: the molars show visible tooth decay — brown and black carious spots in the grooves of the chewing surfaces."),
+        new("teeth.deep_caries", "깊은 충치 (구멍)", "Oral condition: one molar has a deep cavity, a dark brown-black hole of soft decayed dentin on the chewing surface, surrounded by chalky white enamel."),
+        new("teeth.gold", "금 인레이", "Oral condition: several molars have old gold inlays embedded in the chewing surfaces — not gold crowns, not braces."),
+        new("teeth.resin", "흰 레진 충전", "Oral condition: some molars have tooth-colored white resin fillings."),
+        new("teeth.amalgam", "은색 아말감", "Oral condition: some molars have old dark silver amalgam fillings."),
+        new("teeth.braces", "교정 장치", "Oral condition: {who} wears metal orthodontic braces with brackets and wires."),
+        new("teeth.tartar", "치석·잇몸 염증", "Oral condition: yellowish tartar along the gumline and slightly red, swollen gums."),
+        new("teeth.healthy", "건강한 치아", "Oral condition: clean, healthy white teeth and pink gums."),
+    ];
+
+    // ---------- 진료 상황 ----------
+    // '진료 중'이 아닌 상황(situ.* 중 TreatmentSituationKey 외)을 고르면 진료용 규칙이 빠진다.
+    public const string TreatmentSituationKey = "situ.treatment";
+
+    public static IReadOnlyList<PromptOption> Situations { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new(TreatmentSituationKey, "진료 중", "Situation: dental treatment in progress in the reclined dental chair."),
+        new("situ.consult", "상담 (모니터로 엑스레이 설명)", "Situation: consultation — the patient sits upright in the dental chair while the dentist, seated beside them, points at a panoramic X-ray on a monitor and explains the treatment plan; no instruments in the mouth."),
+        new("situ.rinse", "타구대에서 양치", "Situation: the patient sits up in the dental chair, leans toward the small round spittoon (cuspidor) bowl attached to the dental unit, and rinses the mouth with water from a small paper cup; the dentist waits beside."),
+        new("situ.reception", "접수·대기실", "Situation: at the clinic reception desk, a staff member greets the patient who is checking in; waiting room sofa in the background."),
+        new("situ.guide", "체어로 안내", "Situation: a dental hygienist guides the patient to sit down in the dental chair and puts a bib on them."),
+        new("situ.xray", "파노라마 엑스레이 촬영", "Situation: the patient stands inside a panoramic dental X-ray machine, biting on the bite block, wearing a lead apron; the hygienist adjusts the position."),
+        new("situ.anesthesia", "마취 주사", "Situation: the dentist gently gives a local anesthetic injection into the gum with a dental syringe while the patient grips the armrest."),
+        new("situ.intraoral_cam", "구강 카메라 촬영", "Situation: the hygienist takes pictures inside the patient's mouth with a pen-shaped intraoral camera; the teeth appear on a monitor."),
+        new("situ.impression", "본뜨기", "Situation: an impression tray filled with pink alginate is pressed onto the patient's teeth."),
+        new("situ.mirror_check", "진료 후 손거울 확인", "Situation: after treatment, the patient sits up and checks their teeth in a hand mirror, smiling, while the dentist explains."),
+        new("situ.brushing_edu", "칫솔질 교육", "Situation: the hygienist demonstrates correct tooth brushing on a large tooth model to the patient."),
+        new("situ.child_calm", "아이 달래기", "Situation: the dentist kneels to eye level and comforts a nervous child patient before treatment, smiling."),
+        new("situ.payment", "수납·예약", "Situation: the patient pays and books the next appointment at the reception counter."),
+        new("situ.finish", "진료 끝 (bib 벗기)", "Situation: treatment is finished — the chair is raised, the dentist pulls down the mask and the hygienist removes the patient's bib."),
+    ];
+
+    // ---------- 진료 내용 ----------
+    // 입안 장면이 잘 나오려면 '무엇을 어디에 하는지'를 구체적으로 적어야 한다.
+
+    public static IReadOnlyList<PromptOption> Treatments { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("treat.caries_removal", "충치 제거 (드릴)", "Treatment: cavity removal in progress — the tip of a thin bur on the high-speed handpiece is cutting into the dark brown decay inside the tooth, with a fine water spray mist around the bur and a suction tip removing the water."),
+        new("treat.exam", "검진 (미러·탐침)", "Treatment: dental check-up — a dental mirror and a sharp explorer probe are inside the mouth, the explorer tip touching the molar grooves."),
+        new("treat.resin_fill", "레진 충전 + 광중합", "Treatment: resin filling — white composite resin is being placed in the prepared cavity and a blue curing light is held over the tooth."),
+        new("treat.scaling", "스케일링", "Treatment: scaling — an ultrasonic scaler tip removes tartar along the gumline with a fine water spray."),
+        new("treat.root_canal", "신경치료", "Treatment: root canal — a small endodontic file is inserted into an opening in the top of the molar, with a rubber dam isolating the tooth."),
+        new("treat.extraction", "발치", "Treatment: tooth extraction — dental forceps grip the tooth, with gauze nearby; no excessive blood."),
+        new("treat.crown_prep", "크라운 삭제·본뜨기", "Treatment: crown preparation — the tooth is being shaped into a smaller stump by a diamond bur, impression material and a tray are ready nearby."),
+        new("treat.implant", "임플란트", "Treatment: dental implant placement — a surgical implant motor drill works in the gum where a tooth is missing, under a green surgical drape."),
+        new("treat.fluoride", "불소 도포 (어린이)", "Treatment: fluoride varnish is brushed onto the teeth with a small applicator."),
+    ];
+
+    public static IReadOnlyList<PromptOption> ToothPositions { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("tooth.lower_right_molar", "아래 오른쪽 어금니", "The treated tooth is a lower right molar (the patient's right side)."),
+        new("tooth.lower_left_molar", "아래 왼쪽 어금니", "The treated tooth is a lower left molar (the patient's left side)."),
+        new("tooth.upper_right_molar", "위 오른쪽 어금니", "The treated tooth is an upper right molar, seen in the dental mirror."),
+        new("tooth.upper_left_molar", "위 왼쪽 어금니", "The treated tooth is an upper left molar, seen in the dental mirror."),
+        new("tooth.upper_front", "위 앞니", "The treated tooth is an upper front incisor."),
+        new("tooth.lower_front", "아래 앞니", "The treated tooth is a lower front incisor."),
+    ];
+
+    public static IReadOnlyList<PromptOption> IntraoralDetails { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("oral.mirror_suction", "미러 + 석션 + 물 분사", "Inside the mouth: a dental mirror holds the cheek aside, a suction tip removes water, droplets of water spray glisten on the teeth."),
+        new("oral.rubber_dam", "러버댐", "A green rubber dam with a metal clamp isolates the treated tooth; only that tooth pokes through the dam."),
+        new("oral.retractor", "개구기 (입술 벌림)", "A clear plastic cheek retractor holds the lips wide open."),
+        new("oral.mirror_reflection", "미러에 비친 치아", "The treated tooth is clearly visible as a reflection in the round dental mirror."),
+        new("oral.light", "강한 진료 조명", "Bright focused dental operating light illuminates the inside of the mouth; moist tissues and enamel glisten realistically."),
+    ];
+
+    // ---------- 진료실 ----------
+
+    public static IReadOnlyList<PromptOption> ChairColors { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("chair.skyblue", "하늘색", "The dental unit chair upholstery is light sky blue."),
+        new("chair.mint", "민트", "The dental unit chair upholstery is soft mint green."),
+        new("chair.teal", "청록 (틸)", "The dental unit chair upholstery is teal blue-green."),
+        new("chair.navy", "네이비", "The dental unit chair upholstery is dark navy blue."),
+        new("chair.blue", "코발트 블루", "The dental unit chair upholstery is vivid cobalt blue."),
+        new("chair.white", "화이트", "The dental unit chair upholstery is clean white."),
+        new("chair.gray", "그레이", "The dental unit chair upholstery is light gray."),
+        new("chair.charcoal", "차콜·블랙", "The dental unit chair upholstery is charcoal black."),
+        new("chair.beige", "베이지·크림", "The dental unit chair upholstery is warm beige cream."),
+        new("chair.brown", "브라운", "The dental unit chair upholstery is warm brown."),
+        new("chair.pink", "핑크", "The dental unit chair upholstery is pastel pink."),
+        new("chair.yellow", "옐로", "The dental unit chair upholstery is pastel yellow."),
+        new("chair.orange", "오렌지", "The dental unit chair upholstery is bright orange."),
+        new("chair.red", "레드·와인", "The dental unit chair upholstery is deep wine red."),
+        new("chair.purple", "퍼플", "The dental unit chair upholstery is lavender purple."),
+    ];
+
+    // 각도는 숫자를 넣어야 반영된다(등받이와 바닥 사이 각도가 아니라 등받이·좌석 사이 각도로 적는다).
+    public static IReadOnlyList<PromptOption> ChairRecline { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("recline.upright", "똑바로 세움 (약 100°)", "The dental chair backrest is upright, about 100 degrees from the seat; the patient sits up straight."),
+        new("recline.slight", "살짝 기울임 (약 120°)", "The dental chair backrest is slightly reclined, about 120 degrees from the seat; the patient leans back a little."),
+        new("recline.half", "반쯤 눕힘 (약 140°)", "The dental chair is half reclined, the backrest about 140 degrees from the seat, the patient's upper body at roughly 45 degrees."),
+        new("recline.mostly", "거의 눕힘 (약 160°)", "The dental chair is mostly reclined, the backrest about 160 degrees from the seat, the patient's upper body nearly horizontal."),
+        new("recline.flat", "완전 수평 (180°)", "The dental chair is fully reclined flat, the backrest at 180 degrees; the patient lies completely horizontal on the back, head level with the knees."),
+        new("recline.supine", "머리가 살짝 낮게", "The dental chair is fully reclined with the head slightly lower than the feet (supine position for upper-jaw treatment)."),
     ];
 
     // ---------- 카메라 구도 ----------
@@ -360,6 +563,24 @@ public static class PromptLibrary
             "치과 진료실을 위에서 내려다본 탑다운 앵글의 초고화질 사진. 첨부한 사진의 환자가 치과 의자에 누워 입을 벌리고 있고, 위에서 내려오는 밝은 수술 조명이 환자의 얼굴을 비추고 있다. " +
             "의사의 흰색 가운 소매와 조수의 네이비색 유니폼 소매가 보이며 의료진의 손이 환자의 구강 안팎에서 다양한 기구를 사용하여 섬세하게 작업하고 있다. " +
             "치과용 드릴, 거울, 탐침 등이 입안에 들어가 있고, 환자의 머리 주변으로 치과용 제어 패널, 트레이, 기구들이 배치된 전문적이고 세밀한 장면."),
+        new("실사 C9: 충치 제거 구강 내부 (치과의사 POV)",
+            """
+            Ultra-realistic intraoral dental photograph from the dentist's first-person point of view, looking straight down into a patient's wide-open mouth during cavity removal.
+
+            Framing: extreme close-up — the open mouth, teeth and molars fill the entire frame; the face, eyes and nose are outside the frame, only the stretched lips and a little skin around them are visible. This is NOT a wide shot of the clinic and NOT a portrait of the dentist or the patient.
+
+            The treated tooth: a lower molar in the center of the frame with a clearly visible dark brown-black carious lesion in its chewing surface, surrounded by chalky white enamel. Part of the decay has already been drilled out, exposing a small prepared cavity.
+
+            Action: a white-gloved hand enters from the top-right holding a high-speed dental handpiece; its thin bur tip is inside the cavity, cutting away the brown decay, with a fine mist of cooling water spraying around the bur. Another gloved hand from the top-left holds a round dental mirror that pulls the cheek aside. A suction tip in the corner of the mouth removes the water.
+
+            Details: moist pink gums, tongue partly visible, realistic saliva and water droplets, anatomically correct number and shape of teeth, bright focused dental light, macro lens, shallow depth of field.
+
+            Documentary clinical photography, photorealistic, no beauty retouching. No text, no watermark, no excessive blood, no gore, no deformed or extra teeth, no braces.
+            """, "", "입안 장면: 인물 외모·복장 문장은 자동으로 빠진다(넓은 구도를 부르기 때문)."),
+        new("웹툰: 충치 제거 입안 클로즈업",
+            "Korean webtoon panel, extreme close-up inside a patient's wide-open mouth seen from the dentist's eyes. A lower molar in the center has a dark brown cavity; " +
+            "the thin bur of a high-speed handpiece held by a white-gloved hand is drilling out the decay with a little spray of water, a dental mirror holds the cheek aside. " +
+            "The mouth fills the whole frame, no faces. ", "", "뒤에 대사·효과(예: 위잉~)를 적는다."),
         new("실사 C8: 하이앵글 (짧은 한글)",
             "사진 스타일, 고화질 실사. 위에서 아래로 내려다보는 하이앵글(탑뷰) 구도. 밝고 깨끗한 현대적인 치과 진료실. 화면 중앙의 치과 체어에 누워 입을 벌리고 진료를 받고 있는 젊은 여성 환자. " +
             "화면 오른쪽에는 흰색 가운을 입고 라텍스 장갑을 낀 여성 치과의사가 스툴에 앉아 환자의 입안을 진찰하고 있음. 화면 우측 하단에는 치과용 장비 트레이가 일부 보임. 밝고 전문적인 병원 조명, 4k 해상도. "),
@@ -389,17 +610,17 @@ public static class PromptLibrary
     public static IReadOnlyList<PromptRule> Rules { get; } =
     [
         new("의사는 환자 오른쪽, 위생사는 왼쪽",
-            "The dentist sits on the patient's right side; the dental hygienist assists from the patient's left side holding the suction.", true),
+            "The dentist sits on the patient's right side; the dental hygienist assists from the patient's left side holding the suction.", true, TreatmentOnly: true),
         new("오른손 핸드피스, 왼손 미러",
-            "The dentist holds a high-speed handpiece in the right hand and a dental mirror in the left hand.", true),
+            "The dentist holds a high-speed handpiece in the right hand and a dental mirror in the left hand.", true, TreatmentOnly: true),
         new("핸드피스에 버 장착 (아래 향함)",
-            "The high-speed handpiece has a thin bur fitted, pointing down toward the teeth.", true),
+            "The high-speed handpiece has a thin bur fitted, pointing down toward the teeth.", true, TreatmentOnly: true),
         new("골드 인레이 ≠ 크라운",
             "Gold inlays are embedded in the occlusal surfaces of the molars — not gold crowns, not braces.", false),
         new("초록 소공포 + dental bib",
-            "The patient's face is covered by a green dental drape with an opening only around the nose and mouth, and a dental bib covers the chest.", false),
+            "The patient's face is covered by a green dental drape with an opening only around the nose and mouth, and a dental bib covers the chest.", false, TreatmentOnly: true),
         new("눈 감고 입 최대한 벌림",
-            "The patient lies fully reclined with eyes closed and mouth opened as wide as possible.", true),
+            "The patient lies fully reclined with eyes closed and mouth opened as wide as possible.", true, TreatmentOnly: true),
         new("흰 라텍스 장갑 (마스크·루페는 인물 설정에서)",
             "Dental staff wear white latex gloves.", true),
         new("한국 치과, 한국인",
@@ -418,6 +639,8 @@ public static class PromptLibrary
         "치과의사 시점 POV 환자 입안",
         "환자 시점 로우앵글",
         "ECU 클로즈업",
+        "입안만 꽉 차게, 충치 깎는 버 끝이 보이게",
+        "충치를 더 진한 갈색으로, 물 분사 보이게",
         "환자가 입을 최대한 크게 벌리게",
         "빨간 점 찍은 치아만 금니로",
         "빨간색 칠한 부분 골드인레이로, 색은 자연스럽게",

@@ -44,6 +44,43 @@ public static class ExampleStore
         return Decode(pack, decodeWidth);
     }
 
+    /// <summary>사용자 예제나 기본 예제가 있는지(그림을 디코드하지 않고 확인).</summary>
+    public static bool HasExample(string key)
+    {
+        if (string.IsNullOrEmpty(key))
+            return false;
+        if (Extensions.Any(ext => File.Exists(Path.Combine(UserFolder, key + ext))))
+            return true;
+        try
+        {
+            return Application.GetResourceStream(
+                new Uri($"pack://application:,,,/DentalImageMaker.Forms;component/Resources/Examples/{key}.jpg")) is not null;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 예제가 없는 선택지면 방금 생성한 그림을 예제로 등록한다. 등록했으면 true.
+    /// (이미 예제가 있는 선택지는 건드리지 않는다 — 바꾸려면 '예제 바꾸기'.)
+    /// </summary>
+    public static bool AddIfMissing(string key, string imageFile)
+    {
+        if (string.IsNullOrEmpty(key) || !File.Exists(imageFile) || HasExample(key))
+            return false;
+        try
+        {
+            SetUserExample(key, imageFile);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>사용자가 고른 그림을 이 선택지의 예제로 등록한다(기존 사용자 예제는 지운다).</summary>
     public static void SetUserExample(string key, string sourceFile)
     {
