@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DentalImageMaker.Forms/DentalImageMaker.Forms.csproj" />
+  <Project Path="DentalImageMaker.Main/DentalImageMaker.Main.csproj" />
+  <Project Path="DentalImageMaker.Support/DentalImageMaker.Support.csproj" />
+  <Project Path="DentalImageMaker/DentalImageMaker.csproj" />
+</Solution>

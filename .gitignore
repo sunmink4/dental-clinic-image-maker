@@ -1,0 +1,10 @@
+# Build results
+bin/
+obj/
+publish/
+
+# Visual Studio / Rider / JetBrains
+.vs/
+.idea/
+*.user
+*.suo
