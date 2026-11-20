@@ -6,28 +6,28 @@ using Microsoft.Win32;
 
 namespace DentalImageMaker.Forms.UI.Views;
 
-/// <summary>카메라 구도 한 칸의 선택지를 예제 그림 카드로 보여 주고 하나를 고르게 한다.</summary>
-public partial class CameraPickerWindow
+/// <summary>한 칸(카메라 구도, 주인공 헤어·복장 등)의 선택지를 예제 그림 카드로 보여 주고 하나를 고르게 한다.</summary>
+public partial class OptionPickerWindow
 {
-    private readonly CameraSlot _slot;
+    private readonly OptionSlot _slot;
     private readonly string _exampleFolder;
 
-    public CameraOption? Picked { get; private set; }
+    public PromptOption? Picked { get; private set; }
 
     /// <summary>예제를 바꿨으면 true. 호출한 쪽이 썸네일을 새로 읽는다.</summary>
     public bool ExamplesChanged { get; private set; }
 
-    public CameraPickerWindow(CameraSlot slot, string exampleFolder)
+    public OptionPickerWindow(OptionSlot slot, string exampleFolder)
     {
         InitializeComponent();
         _slot = slot;
         _exampleFolder = exampleFolder;
-        Title = $"카메라 구도 — {slot.Title}";
+        Title = string.IsNullOrEmpty(slot.Group) ? slot.Title : $"{slot.Group} — {slot.Title}";
         Reload();
     }
 
     private void Reload()
-        => Cards.ItemsSource = _slot.Options.Select(o => new CameraCard(o, o == _slot.Selected)).ToList();
+        => Cards.ItemsSource = _slot.Options.Select(o => new OptionCard(o, o == _slot.Selected, _slot.Subject)).ToList();
 
     public override void OnApplyTemplate()
     {
@@ -42,7 +42,7 @@ public partial class CameraPickerWindow
 
     private void OnCardClick(object sender, RoutedEventArgs e)
     {
-        if ((sender as FrameworkElement)?.Tag is not CameraCard card)
+        if ((sender as FrameworkElement)?.Tag is not OptionCard card)
             return;
         Picked = card.Option;
         DialogResult = true;
@@ -51,7 +51,7 @@ public partial class CameraPickerWindow
     private void OnChangeExampleClick(object sender, RoutedEventArgs e)
     {
         e.Handled = true; // 카드 선택으로 번지지 않게
-        if ((sender as FrameworkElement)?.Tag is not CameraCard card)
+        if ((sender as FrameworkElement)?.Tag is not OptionCard card)
             return;
 
         var dialog = new OpenFileDialog
@@ -63,7 +63,7 @@ public partial class CameraPickerWindow
         if (dialog.ShowDialog(this) != true)
             return;
 
-        CameraExampleStore.SetUserExample(card.Option.Key, dialog.FileName);
+        ExampleStore.SetUserExample(card.Option.Key, dialog.FileName);
         ExamplesChanged = true;
         Reload();
     }

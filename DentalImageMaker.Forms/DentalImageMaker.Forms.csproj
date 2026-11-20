@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!--  카메라 구도 예제 그림(Gemini 기록에서 캡처). CameraExampleStore 가 pack URI 로 읽는다.  -->
-        <Resource Include="Resources\CameraExamples\*.jpg" />
+        <!--  선택 창 예제 그림(카메라 구도는 Gemini 기록 캡처, 주인공은 게임 초상). ExampleStore 가 pack URI 로 읽는다.  -->
+        <Resource Include="Resources\Examples\*.jpg" />
     </ItemGroup>
 </Project>

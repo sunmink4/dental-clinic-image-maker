@@ -6,7 +6,7 @@ namespace DentalImageMaker.Main.Prompts;
 public static class PromptBuilder
 {
     /// <summary>
-    /// 이미지: "Generate an image. [비율] [화풍] [장면 앞] [입력] [장면 뒤] [카메라] [규칙]"
+    /// 이미지: "Generate an image. [비율] [화풍] [장면 앞] [입력] [장면 뒤] [주인공] [카메라] [규칙]"
     /// 영상·이어서 보내기(수정 요청)는 머리말 없이 입력 위주로 만든다.
     /// "Generate an image." 를 붙이면 Gemini·ChatGPT 둘 다 글 대신 그림으로 답한다.
     /// </summary>
@@ -18,7 +18,7 @@ public static class PromptBuilder
         AspectRatio? aspect,
         IEnumerable<PromptRule> rules,
         string freeText,
-        IEnumerable<CameraOption?>? camera = null)
+        IEnumerable<string?>? sentences = null)
     {
         var parts = new List<string>();
 
@@ -43,9 +43,9 @@ public static class PromptBuilder
         }
         Add(parts, body.ToString());
 
-        // 카메라 구도는 이어서 보내기(수정 요청)에도 붙인다. "탑뷰로 바꿔줘" 같은 요청이 여기서 나온다.
-        foreach (var option in camera ?? [])
-            Add(parts, option?.Text);
+        // 주인공 설정·카메라 구도는 이어서 보내기(수정 요청)에도 붙인다. "탑뷰로 바꿔줘" 같은 요청이 여기서 나온다.
+        foreach (var sentence in sentences ?? [])
+            Add(parts, sentence);
 
         foreach (var rule in rules)
             Add(parts, rule.Text);

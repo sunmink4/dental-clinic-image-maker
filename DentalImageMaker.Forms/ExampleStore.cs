@@ -7,10 +7,10 @@ namespace DentalImageMaker.Forms;
 
 /// <summary>
 /// 카메라 구도 선택지마다 보여 줄 예제 그림.
-/// 기본 예제는 Gemini 기록에서 만든 그림을 앱에 넣어 두었다(Resources/CameraExamples/{key}.jpg).
+/// 기본 예제는 Gemini 기록에서 만든 그림을 앱에 넣어 두었다(Resources/Examples/{key}.jpg).
 /// 사용자가 바꾼 예제는 %AppData%\DentalImageMaker\camera-examples\{key}.* 에 두고, 이쪽을 먼저 쓴다.
 /// </summary>
-public static class CameraExampleStore
+public static class ExampleStore
 {
     public static readonly string UserFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -30,7 +30,7 @@ public static class CameraExampleStore
                 return Decode(new Uri(path), decodeWidth);
         }
 
-        var pack = new Uri($"pack://application:,,,/DentalImageMaker.Forms;component/Resources/CameraExamples/{key}.jpg");
+        var pack = new Uri($"pack://application:,,,/DentalImageMaker.Forms;component/Resources/Examples/{key}.jpg");
         try
         {
             // 기본 예제가 없는 선택지도 있다(위생사 시점 등). 없으면 리소스 조회가 예외를 낸다.

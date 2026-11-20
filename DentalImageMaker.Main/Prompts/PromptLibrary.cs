@@ -16,18 +16,149 @@ public sealed record AspectRatio(string Name, string Text)
     public override string ToString() => Name;
 }
 
-/// <summary>카메라 구도 선택지 하나. Text 는 프롬프트에 그대로 붙는 영어 문장(비어 있으면 지정 안 함).</summary>
-public sealed record CameraOption(string Key, string Name, string Text)
+/// <summary>
+/// 예제 그림 카드로 고르는 선택지 하나(카메라 구도, 주인공 설정).
+/// Key 는 예제 그림 파일 이름, Text 는 프롬프트에 그대로 붙는 영어 문장(비어 있으면 지정 안 함).
+/// </summary>
+public sealed record PromptOption(string Key, string Name, string Text)
 {
     public override string ToString() => Name;
+
+    public bool IsMale => Key.StartsWith("gender.m", StringComparison.Ordinal);
 }
 
 public static class PromptLibrary
 {
+    // ---------- 치과의사 (주인공) ----------
+    // 기본값은 첫 번째 항목: 20대 후반 한국 여성, 낮은 포니테일, 흰 가운 + 네이비 스크럽, 마스크 착용.
+    // 예제 그림은 dental-clinic-clicker 의 주인공 초상(hero_f1~9, hero_m1~9).
+
+    public static IReadOnlyList<PromptOption> DentistGenders { get; } =
+    [
+        new("gender.f20", "20대 후반 여성", "The main character is the dentist: a young Korean woman in her late 20s with a natural Korean face."),
+        new("gender.f30", "30대 여성", "The main character is the dentist: a Korean woman in her 30s with a natural Korean face."),
+        new("gender.f40", "40대 여성", "The main character is the dentist: a Korean woman in her 40s with a warm, mature look."),
+        new("gender.m20", "20대 후반 남성", "The main character is the dentist: a young Korean man in his late 20s with a natural Korean face."),
+        new("gender.m30", "30대 남성", "The main character is the dentist: a Korean man in his 30s with a natural Korean face."),
+        new("gender.m40", "40대 남성", "The main character is the dentist: a Korean man in his 40s with a calm, experienced look."),
+    ];
+
+    public static IReadOnlyList<PromptOption> FemaleHairs { get; } =
+    [
+        new("hair.f_low_ponytail", "낮은 포니테일 + 앞머리", "{who}'s hair: dark hair in a low ponytail with soft see-through bangs."),
+        new("hair.f_suyeon_bob", "갈색 단발 가르마 (안수연)", "{who}'s hair: a brown bob cut with a side part."),
+        new("hair.f_bob", "단발 보브", "{who}'s hair: a short chin-length bob cut."),
+        new("hair.f_long_halfup", "긴 생머리 반묶음", "{who}'s hair: long straight black hair tied half up."),
+        new("hair.f_wavy", "웨이브 어깨 길이 (갈색)", "{who}'s hair: wavy shoulder-length brown hair."),
+        new("hair.f_pixie", "숏컷", "{who}'s hair: a short pixie cut."),
+        new("hair.f_low_bun", "낮은 올림머리 (번)", "{who}'s hair: hair neatly tied in a low bun."),
+        new("hair.f_layered", "짧은 레이어드", "{who}'s hair: short layered hair."),
+        new("hair.f_high_ponytail", "높은 포니테일", "{who}'s hair: a high ponytail."),
+        new("hair.f_long_bangs", "긴 앞머리 + 묶음", "{who}'s hair: long bangs with the hair tied back."),
+    ];
+
+    public static IReadOnlyList<PromptOption> MaleHairs { get; } =
+    [
+        new("hair.m_short", "짧고 단정한 머리", "{who}'s hair: short neat black hair."),
+        new("hair.m_side_part", "옆가르마 앞머리", "{who}'s hair: a soft side-parted fringe."),
+        new("hair.m_undercut", "슬릭백 언더컷", "{who}'s hair: a slicked-back black undercut."),
+        new("hair.m_wavy", "웨이브 중간 길이", "{who}'s hair: wavy medium-length hair."),
+        new("hair.m_buzz", "버즈컷", "{who}'s hair: a buzz cut."),
+        new("hair.m_center_part", "가운데 가르마", "{who}'s hair: a center part."),
+        new("hair.m_gray_temples", "짧은 머리 + 옆머리 흰머리", "{who}'s hair: short hair with slight gray at the temples."),
+        new("hair.m_curly", "짧은 곱슬머리", "{who}'s hair: short curly hair."),
+        new("hair.m_long_bangs", "긴 앞머리", "{who}'s hair: long bangs falling over the forehead."),
+    ];
+
+    public static IReadOnlyList<PromptOption> DentistOutfits { get; } =
+    [
+        new("outfit.coat_navy", "흰 가운 + 네이비 스크럽", "{who} wears a white doctor's coat over navy scrubs."),
+        new("outfit.coat_lightblue", "흰 가운 + 하늘색 스크럽", "{who} wears a white doctor's coat over light blue scrubs."),
+        new("outfit.navy_scrubs", "네이비 스크럽만", "{who} wears navy scrubs without a coat."),
+        new("outfit.lavender_scrubs", "라벤더 스크럽", "{who} wears a lavender scrub top."),
+        new("outfit.mint_scrubs", "민트 스크럽", "{who} wears mint scrubs."),
+        new("outfit.black_scrubs", "블랙 스크럽", "{who} wears a black scrub top."),
+        new("outfit.coat_mint", "흰 가운 + 민트 스크럽", "{who} wears a white doctor's coat over mint scrubs."),
+        new("outfit.green_surgical", "초록 수술복", "{who} wears green surgical scrubs."),
+        new("outfit.short_gown", "흰 실습 가운 (짧은)", "{who} wears a short white dental practice gown over navy scrubs."),
+        new("outfit.wine_scrubs", "와인 스크럽", "{who} wears a wine-red scrub top."),
+        new("outfit.gray_scrubs", "그레이 스크럽", "{who} wears charcoal gray scrubs."),
+        new("outfit.surgical_cap", "수술복 + 수술 모자", "{who} wears teal surgical scrubs and a matching surgical cap."),
+    ];
+
+    public static IReadOnlyList<PromptOption> DentistMasks { get; } =
+    [
+        new("mask.on", "마스크 착용", "{who} wears a plain white surgical mask over the nose and mouth."),
+        new("mask.chin", "마스크 턱 아래로", "{who}'s surgical mask is pulled down under the chin, so the face is visible."),
+        new("mask.off", "마스크 없음", "{who} wears no mask; the face is fully visible."),
+    ];
+
+    public static IReadOnlyList<PromptOption> DentistAccessories { get; } =
+    [
+        new("", "없음", ""),
+        new("acc.thin_glasses", "얇은 안경", "{who} wears thin metal-frame glasses."),
+        new("acc.round_glasses", "둥근 안경", "{who} wears round glasses."),
+        new("acc.loupe", "루페 착용", "{who} wears dental surgical loupes: dark frames with two small cylindrical magnifying telescopes."),
+        new("acc.earrings", "작은 금색 링 귀걸이", "{who} wears small gold hoop earrings."),
+        new("acc.stethoscope", "청진기 + 이름표", "{who} has a stethoscope around the neck and a blank name badge."),
+    ];
+
+
+    // ---------- 치과위생사 ----------
+    // 머리·복장·마스크 문장의 {who} 는 "The dental hygienist" 로 바뀐다. 예제는 hyg_1~20 초상.
+
+    public static IReadOnlyList<PromptOption> HygienistGenders { get; } =
+    [
+        new("hyg.f20", "20대 여성", "A Korean dental hygienist assists: a young Korean woman in her 20s."),
+        new("hyg.f30", "30대 여성", "A Korean dental hygienist assists: a Korean woman in her 30s."),
+        new("hyg.f40", "40대 여성", "A Korean dental hygienist assists: a Korean woman in her 40s with a warm smile."),
+        new("hyg.f50", "50대 여성 (실장)", "A Korean dental hygienist assists: an experienced Korean head hygienist in her 50s."),
+        new("hyg.m20", "20대 남성", "A Korean dental hygienist assists: a young Korean man in his 20s."),
+        new("hyg.m30", "30대 남성", "A Korean dental hygienist assists: a Korean man in his 30s."),
+    ];
+
+    public static IReadOnlyList<PromptOption> HygienistFemaleHairs { get; } =
+    [
+        new("hyghair.low_ponytail", "낮은 포니테일", "{who}'s hair: dark hair in a neat low ponytail."),
+        new("hyghair.bob_bangs", "단발 + 앞머리", "{who}'s hair: a short bob with soft bangs."),
+        new("hyghair.high_ponytail", "높은 포니테일", "{who}'s hair: a high ponytail."),
+        new("hyghair.low_bun", "낮은 올림머리 (번)", "{who}'s hair: a tidy low bun."),
+        new("hyghair.half_up", "반묶음", "{who}'s hair: a half-up hairstyle."),
+        new("hyghair.side_braid", "옆으로 땋은 머리", "{who}'s hair: a side braid."),
+        new("hyghair.short_perm", "짧은 파마", "{who}'s hair: short permed hair."),
+        new("hyghair.pixie", "숏컷", "{who}'s hair: a pixie cut."),
+        new("hyghair.long_ponytail", "긴 포니테일", "{who}'s hair: a long ponytail."),
+        new("hyghair.twin_buns", "양쪽 낮은 번", "{who}'s hair: twin low buns."),
+        new("hyghair.nape_wavy", "웨이브 목뒤 묶음", "{who}'s hair: wavy hair tied at the nape."),
+        new("hyghair.long_bangs", "긴 앞머리 생머리", "{who}'s hair: long straight hair with long bangs."),
+    ];
+
+    public static IReadOnlyList<PromptOption> HygienistOutfits { get; } =
+    [
+        new("hygoutfit.mint", "민트 스크럽", "{who} wears mint scrubs."),
+        new("hygoutfit.green", "초록 스크럽", "{who} wears green scrubs."),
+        new("hygoutfit.navy", "네이비 스크럽", "{who} wears navy scrubs."),
+        new("hygoutfit.lavender", "라벤더 스크럽", "{who} wears lavender scrubs."),
+        new("hygoutfit.pink", "핑크 스크럽", "{who} wears soft pink scrubs."),
+        new("hygoutfit.skyblue", "하늘색 스크럽", "{who} wears sky blue scrubs."),
+        new("hygoutfit.black", "블랙 스크럽", "{who} wears black scrubs."),
+        new("hygoutfit.white", "흰 유니폼", "{who} wears a white dental uniform."),
+    ];
+
+    public static IReadOnlyList<PromptOption> HygienistAccessories { get; } =
+    [
+        new("", "없음", ""),
+        new("hygacc.glasses", "안경", "{who} wears thin glasses."),
+        new("hygacc.round_glasses", "둥근 안경", "{who} wears round glasses."),
+        new("hygacc.cap", "수술 모자", "{who} wears a light blue surgical cap."),
+        new("hygacc.faceshield", "페이스 쉴드 (올림)", "{who} has a clear face shield pushed up on the head."),
+        new("hygacc.lanyard", "목걸이 이름표", "{who} wears a lanyard with a blank name badge."),
+    ];
+
     // ---------- 카메라 구도 ----------
     // 기록에서 얻은 교훈: 각도·방향은 숫자를 넣은 별도 문장이어야 반영된다(예: 2시 방향, 35–45°).
 
-    public static IReadOnlyList<CameraOption> Viewpoints { get; } =
+    public static IReadOnlyList<PromptOption> Viewpoints { get; } =
     [
         new("", "지정 안 함", ""),
         new("view.observer", "관찰자 (3인칭)", "Camera viewpoint: a third-person observer standing beside the dental chair."),
@@ -37,7 +168,7 @@ public static class PromptLibrary
         new("view.ots", "의사 어깨 너머 (OTS)", "Camera viewpoint: over the dentist's shoulder, looking down at the patient."),
     ];
 
-    public static IReadOnlyList<CameraOption> Angles { get; } =
+    public static IReadOnlyList<PromptOption> Angles { get; } =
     [
         new("", "지정 안 함", ""),
         new("angle.top", "탑뷰 (바로 위 90°)", "Camera angle: straight top-down overhead view, 90 degrees above the patient."),
@@ -50,7 +181,7 @@ public static class PromptLibrary
         new("angle.dutch", "더치앵글 (기울임)", "Camera angle: Dutch angle, the frame tilted about 15 degrees for tension."),
     ];
 
-    public static IReadOnlyList<CameraOption> ShotSizes { get; } =
+    public static IReadOnlyList<PromptOption> ShotSizes { get; } =
     [
         new("", "지정 안 함", ""),
         new("shot.ecu", "ECU 구강 내부", "Shot size: extreme close-up of the inside of the open mouth; teeth and molars fill the entire frame, face mostly outside the frame."),
@@ -61,7 +192,7 @@ public static class PromptLibrary
         new("shot.wide", "와이드 (진료실 전체)", "Shot size: wide establishing shot of the whole treatment room."),
     ];
 
-    public static IReadOnlyList<CameraOption> HeadDirections { get; } =
+    public static IReadOnlyList<PromptOption> HeadDirections { get; } =
     [
         new("", "지정 안 함", ""),
         new("head.12", "화면 위 (12시)", "The patient's head points toward the top of the frame (12 o'clock position), feet toward the bottom."),
@@ -73,7 +204,7 @@ public static class PromptLibrary
         new("head.front", "정면 (카메라 쪽)", "The patient's face is turned straight toward the camera, head tilted back."),
     ];
 
-    public static IReadOnlyList<CameraOption> Lenses { get; } =
+    public static IReadOnlyList<PromptOption> Lenses { get; } =
     [
         new("", "지정 안 함", ""),
         new("lens.shallow", "얕은 심도 (배경 흐림)", "Lens: shallow depth of field, background softly blurred."),
@@ -84,7 +215,7 @@ public static class PromptLibrary
         new("lens.handheld", "핸드헬드 다큐", "Lens: natural handheld documentary framing, slightly off-center."),
     ];
 
-    public static IReadOnlyList<CameraOption> CameraMoves { get; } =
+    public static IReadOnlyList<PromptOption> CameraMoves { get; } =
     [
         new("", "지정 안 함", ""),
         new("move.static", "고정", "Camera movement: static locked-off shot."),
@@ -269,8 +400,8 @@ public static class PromptLibrary
             "The patient's face is covered by a green dental drape with an opening only around the nose and mouth, and a dental bib covers the chest.", false),
         new("눈 감고 입 최대한 벌림",
             "The patient lies fully reclined with eyes closed and mouth opened as wide as possible.", true),
-        new("마스크·라텍스 장갑, 루페 없음",
-            "Dental staff wear surgical masks and white latex gloves; no loupes, no goggles.", true),
+        new("흰 라텍스 장갑 (마스크·루페는 인물 설정에서)",
+            "Dental staff wear white latex gloves.", true),
         new("한국 치과, 한국인",
             "Set in a present-day South Korean dental clinic with Korean staff and patients.", false),
         new("글자·자막·워터마크 금지",

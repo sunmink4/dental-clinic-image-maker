@@ -29,11 +29,25 @@ public partial class MainWindowViewModel : ObservableObject
         Rules = new(PromptLibrary.Rules.Select(r => new RuleOption(r)));
         foreach (var rule in Rules)
             rule.PropertyChanged += (_, _) => OnPropertyChanged(nameof(FinalPrompt));
-        foreach (var slot in CameraSlots)
+        // 저장해 둔 주인공·위생사 설정을 되살린다(헤어는 성별에 맞는 목록을 먼저 고른다).
+        _includeDentist = settings.IncludeDentist;
+        _includeHygienist = settings.IncludeHygienist;
+        _dentistGender.SelectByKey(settings.SlotSelections.GetValueOrDefault(_dentistGender.Id));
+        _hygienistGender.SelectByKey(settings.SlotSelections.GetValueOrDefault(_hygienistGender.Id));
+        SyncHairOptions();
+        foreach (var slot in DentistSlots.Concat(HygienistSlots))
+            slot.SelectByKey(settings.SlotSelections.GetValueOrDefault(slot.Id));
+
+        foreach (var slot in CameraSlots.Concat(DentistSlots).Concat(HygienistSlots))
             slot.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(CameraSlot.Selected))
-                    OnPropertyChanged(nameof(FinalPrompt));
+                if (e.PropertyName != nameof(OptionSlot.Selected))
+                    return;
+                if (slot == _dentistGender || slot == _hygienistGender)
+                    SyncHairOptions();
+                if (DentistSlots.Contains(slot) || HygienistSlots.Contains(slot))
+                    SaveCharacter();
+                OnPropertyChanged(nameof(FinalPrompt));
             };
 
         _selectedStyle = Styles[0];
@@ -81,26 +95,107 @@ public partial class MainWindowViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(FinalPrompt))]
     private string _freeText = "";
 
+    // ---------- 등장인물 (치과의사·치과위생사) ----------
+
+    private const string Dentist = "The dentist";
+    private const string Hygienist = "The dental hygienist";
+
+    private readonly OptionSlot _dentistGender = new("dentist.gender", "성별·나이", PromptLibrary.DentistGenders) { Group = "치과의사", Subject = Dentist };
+    private readonly OptionSlot _dentistHair = new("dentist.hair", "헤어", PromptLibrary.FemaleHairs) { Group = "치과의사", Subject = Dentist };
+    private readonly OptionSlot _hygienistGender = new("hygienist.gender", "성별·나이", PromptLibrary.HygienistGenders) { Group = "치과위생사", Subject = Hygienist };
+    private readonly OptionSlot _hygienistHair = new("hygienist.hair", "헤어", PromptLibrary.HygienistFemaleHairs) { Group = "치과위생사", Subject = Hygienist };
+
+    private IReadOnlyList<OptionSlot>? _dentistSlots;
+    private IReadOnlyList<OptionSlot>? _hygienistSlots;
+
+    /// <summary>주인공 치과의사. 기본값은 20대 후반 여성·낮은 포니테일·흰 가운+네이비 스크럽·마스크 착용.</summary>
+    public IReadOnlyList<OptionSlot> DentistSlots => _dentistSlots ??=
+    [
+        _dentistGender,
+        _dentistHair,
+        new("dentist.outfit", "복장", PromptLibrary.DentistOutfits) { Group = "치과의사", Subject = Dentist },
+        new("dentist.mask", "마스크", PromptLibrary.DentistMasks) { Group = "치과의사", Subject = Dentist },
+        new("dentist.accessory", "안경·장신구", PromptLibrary.DentistAccessories) { Group = "치과의사", Subject = Dentist },
+    ];
+
+    public IReadOnlyList<OptionSlot> HygienistSlots => _hygienistSlots ??=
+    [
+        _hygienistGender,
+        _hygienistHair,
+        new("hygienist.outfit", "복장", PromptLibrary.HygienistOutfits) { Group = "치과위생사", Subject = Hygienist },
+        new("hygienist.mask", "마스크", PromptLibrary.DentistMasks) { Group = "치과위생사", Subject = Hygienist },
+        new("hygienist.accessory", "안경·장신구", PromptLibrary.HygienistAccessories) { Group = "치과위생사", Subject = Hygienist },
+    ];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinalPrompt))]
+    private bool _includeDentist;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinalPrompt))]
+    private bool _includeHygienist;
+
+    partial void OnIncludeDentistChanged(bool value) => SaveCharacter();
+
+    partial void OnIncludeHygienistChanged(bool value) => SaveCharacter();
+
+    /// <summary>남성을 고르면 헤어 목록도 남성용으로 바꾼다(여성 헤어가 남은 채 모순된 프롬프트가 나가지 않게).</summary>
+    private void SyncHairOptions()
+    {
+        _dentistHair.SwapOptions(_dentistGender.Selected.IsMale ? PromptLibrary.MaleHairs : PromptLibrary.FemaleHairs);
+        _hygienistHair.SwapOptions(_hygienistGender.Selected.Key.StartsWith("hyg.m", StringComparison.Ordinal)
+            ? PromptLibrary.MaleHairs
+            : PromptLibrary.HygienistFemaleHairs);
+    }
+
+    private void SaveCharacter()
+    {
+        _settings.IncludeDentist = IncludeDentist;
+        _settings.IncludeHygienist = IncludeHygienist;
+        foreach (var slot in DentistSlots.Concat(HygienistSlots))
+            _settings.SlotSelections[slot.Id] = slot.Selected.Key;
+        _settings.Save();
+    }
+
+    [RelayCommand]
+    private void ResetDentist()
+    {
+        foreach (var slot in DentistSlots)
+            slot.Selected = slot.Options[0];
+        SyncHairOptions();
+        _dentistHair.Selected = _dentistHair.Options[0];
+    }
+
+    [RelayCommand]
+    private void ResetHygienist()
+    {
+        foreach (var slot in HygienistSlots)
+            slot.Selected = slot.Options[0];
+        SyncHairOptions();
+        _hygienistHair.Selected = _hygienistHair.Options[0];
+    }
+
     // ---------- 카메라 구도 ----------
 
     /// <summary>카메라 구도 칸들. 칸을 누르면 예제 그림 카드가 있는 선택 창이 뜬다.</summary>
-    public IReadOnlyList<CameraSlot> CameraSlots { get; } =
+    public IReadOnlyList<OptionSlot> CameraSlots { get; } =
     [
-        new("시점", PromptLibrary.Viewpoints),
-        new("앵글", PromptLibrary.Angles),
-        new("샷 크기", PromptLibrary.ShotSizes),
-        new("환자 머리 방향 (화면 기준)", PromptLibrary.HeadDirections),
-        new("렌즈·심도", PromptLibrary.Lenses),
-        new("카메라 움직임 (영상)", PromptLibrary.CameraMoves, videoOnly: true),
+        new("camera.view", "시점", PromptLibrary.Viewpoints) { Group = "카메라 구도" },
+        new("camera.angle", "앵글", PromptLibrary.Angles) { Group = "카메라 구도" },
+        new("camera.shot", "샷 크기", PromptLibrary.ShotSizes) { Group = "카메라 구도" },
+        new("camera.head", "환자 머리 방향 (화면 기준)", PromptLibrary.HeadDirections) { Group = "카메라 구도" },
+        new("camera.lens", "렌즈·심도", PromptLibrary.Lenses) { Group = "카메라 구도" },
+        new("camera.move", "카메라 움직임 (영상)", PromptLibrary.CameraMoves, videoOnly: true) { Group = "카메라 구도" },
     ];
 
+    /// <summary>칸을 누르면 예제 그림 카드 선택 창을 띄운다(카메라·인물 칸 공통).</summary>
     [RelayCommand]
-    private void PickCamera(CameraSlot slot)
+    private void PickOption(OptionSlot slot)
     {
-        var window = new CameraPickerWindow(slot, OutputFolder) { Owner = System.Windows.Application.Current.MainWindow };
+        var window = new OptionPickerWindow(slot, OutputFolder) { Owner = System.Windows.Application.Current.MainWindow };
         var picked = window.ShowDialog() == true ? window.Picked : null;
         if (window.ExamplesChanged)
-            foreach (var s in CameraSlots)
+            foreach (var s in CameraSlots.Concat(DentistSlots).Concat(HygienistSlots))
                 s.RefreshThumbnail();
         if (picked is not null)
             slot.Selected = picked;
@@ -113,8 +208,18 @@ public partial class MainWindowViewModel : ObservableObject
             slot.Selected = slot.Options[0];
     }
 
-    private IEnumerable<CameraOption> CameraSelection()
-        => CameraSlots.Where(s => !s.VideoOnly || IsVideoKind).Select(s => s.Selected);
+    /// <summary>프롬프트에 붙일 인물·카메라 문장. 인물이 먼저, 카메라가 뒤.</summary>
+    private IEnumerable<string> OptionSentences()
+    {
+        if (IncludeDentist)
+            foreach (var slot in DentistSlots)
+                yield return slot.PromptText;
+        if (IncludeHygienist)
+            foreach (var slot in HygienistSlots)
+                yield return slot.PromptText;
+        foreach (var slot in CameraSlots.Where(s => !s.VideoOnly || IsVideoKind))
+            yield return slot.PromptText;
+    }
 
     partial void OnIsVideoKindChanged(bool value)
     {
@@ -166,7 +271,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     public string FinalPrompt => PromptBuilder.Build(
         Kind, ContinueChat, SelectedStyle, SelectedScene, SelectedAspect,
-        Rules.Where(r => r.IsOn).Select(r => r.Rule), FreeText, CameraSelection());
+        Rules.Where(r => r.IsOn).Select(r => r.Rule), FreeText, OptionSentences());
 
     /// <summary>MainWindow 가 화면 전환(브라우저 보이기)을 처리하도록 알린다.</summary>
     public event Action<AiProvider>? ProviderShown;

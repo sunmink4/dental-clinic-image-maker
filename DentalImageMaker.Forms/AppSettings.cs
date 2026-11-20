@@ -22,6 +22,15 @@ public sealed class AppSettings
 
     public AiProvider LastProvider { get; set; } = AiProvider.Gemini;
 
+    /// <summary>프롬프트에 주인공 치과의사 묘사를 넣을지.</summary>
+    public bool IncludeDentist { get; set; } = true;
+
+    /// <summary>프롬프트에 치과위생사 묘사를 넣을지. 위생사가 안 나오는 장면도 많아서 기본은 끈다.</summary>
+    public bool IncludeHygienist { get; set; }
+
+    /// <summary>인물 설정 칸에서 고른 값(칸 Id → 선택지 Key). 다음 실행에도 같은 주인공으로 시작한다.</summary>
+    public Dictionary<string, string> SlotSelections { get; set; } = [];
+
     /// <summary>대기열이 연속으로 이만큼 실패하면 한도에 걸린 것으로 보고 멈춘다.</summary>
     public int MaxConsecutiveFailures { get; set; } = 3;
 
