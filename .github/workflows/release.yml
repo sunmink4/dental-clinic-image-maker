@@ -1,0 +1,70 @@
+name: Release
+
+# v0.1.0 같은 태그를 푸시하면 exe 를 만들어 GitHub 릴리스에 올린다.
+# sunmink4.github.io 의 다운로드 버튼이 파일 이름 끝(-win-x64.exe 등)으로 찾으니 이름 규칙을 바꾸지 말 것.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # 자체 포함(self-contained): .NET 설치 없이 실행되는 단일 exe
+      - name: Publish self-contained executable
+        run: >
+          dotnet publish DentalImageMaker/DentalImageMaker.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o publish
+
+      # 프레임워크 종속(framework-dependent): .NET 8 데스크톱 런타임이 있는 PC용(용량이 작음)
+      - name: Publish framework-dependent executable
+        run: >
+          dotnet publish DentalImageMaker/DentalImageMaker.csproj
+          -c Release
+          -r win-x64
+          --self-contained false
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o publish-fd
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          Copy-Item "publish\DentalImageMaker.exe" "DentalImageMaker-$version-win-x64.exe"
+          Copy-Item "publish-fd\DentalImageMaker.exe" "DentalImageMaker-$version-win-x64-framework-dependent.exe"
+
+      - name: Create or update GitHub release
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $assets = @(
+            "DentalImageMaker-$tag-win-x64.exe",
+            "DentalImageMaker-$tag-win-x64-framework-dependent.exe"
+          )
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $assets --clobber
+          } else {
+            gh release create $tag $assets --title $tag --generate-notes
+          }
