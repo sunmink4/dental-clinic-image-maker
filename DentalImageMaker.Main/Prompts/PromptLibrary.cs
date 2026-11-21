@@ -4,7 +4,8 @@ namespace DentalImageMaker.Main.Prompts;
 /// 프롬프트 조각. 장면 프리셋은 Before + (사용자 입력) + After 로 끼워 넣는다.
 /// 출처는 docs/gemini-history.md (Gemini 대화 기록에서 다듬어진 프롬프트).
 /// </summary>
-public sealed record PromptPreset(string Name, string Before, string After = "", string Hint = "")
+/// <param name="StaffFacesHidden">의료진 얼굴이 화면 밖인 장면. 고르면 의사·위생사의 얼굴·머리 묘사 문장을 뺀다(가운·스크럽은 남김).</param>
+public sealed record PromptPreset(string Name, string Before, string After = "", string Hint = "", bool StaffFacesHidden = false)
 {
     public override string ToString() => Name;
 }
@@ -243,6 +244,7 @@ public static class PromptLibrary
     [
         new("", "지정 안 함", ""),
         new("pstate.wide", "눈 감고 입 크게", "{who} lies fully reclined with eyes closed and mouth opened as wide as possible."),
+        new("pstate.grimace", "눈 질끈 감고 찡그림", "{who} lies fully reclined, eyes squeezed tightly shut, brows drawn together in a slight frown of discomfort, mouth opened wide."),
         new("pstate.tense", "긴장 (손 꽉 쥠)", "{who} looks tense, eyebrows raised, hands tightly clasped on the stomach, mouth wide open."),
         new("pstate.relaxed", "편안함", "{who} lies relaxed and calm with mouth open."),
         new("pstate.scared", "겁먹은 표정", "{who} looks scared with teary eyes, gripping the armrest."),
@@ -369,7 +371,13 @@ public static class PromptLibrary
         new("view.patient_pov", "환자 시점 POV", "Camera viewpoint: first-person POV from the patient lying in the chair, looking up at the dentist's masked face and the dental light above."),
         new("view.hygienist_pov", "위생사 시점 POV", "Camera viewpoint: first-person POV from the dental hygienist on the patient's left side, holding the suction."),
         new("view.ots", "의사 어깨 너머 (OTS)", "Camera viewpoint: over the dentist's shoulder, looking down at the patient."),
+        new(FacelessViewKey, "의사 뒤 위에서 (의사 얼굴 화면 밖)",
+            "Camera viewpoint: from just behind and above the standing dentist, looking down past the dentist's shoulder at the reclined patient. " +
+            "Only the dentist's torso, arms and gloved hands are visible; the dentist's head and face are cut off above the top edge of the frame."),
     ];
+
+    /// <summary>의료진 얼굴이 화면 밖인 시점. 고르면 의사·위생사의 얼굴·머리 묘사 문장을 뺀다.</summary>
+    public const string FacelessViewKey = "view.ots_faceless";
 
     public static IReadOnlyList<PromptOption> Angles { get; } =
     [
@@ -401,6 +409,7 @@ public static class PromptLibrary
         new("head.12", "화면 위 (12시)", "The patient's head points toward the top of the frame (12 o'clock position), feet toward the bottom."),
         new("head.2", "우상단 (2시)", "The patient's head is angled toward the top-right of the frame (2 o'clock position)."),
         new("head.6", "화면 아래 (6시)", "The patient's head points toward the bottom of the frame (6 o'clock position), feet toward the top."),
+        new("head.4", "우하단 (4~5시)", "The patient's head points toward the bottom-right of the frame (about 4–5 o'clock position), body extending toward the top-left; seen from above, the face appears upside down with the chin toward the top-left."),
         new("head.3", "오른쪽 (3시)", "The patient's head points to the right side of the frame (3 o'clock position)."),
         new("head.10", "좌상단 (10시)", "The patient's head is angled toward the top-left of the frame (10 o'clock position)."),
         new("head.9", "왼쪽 (9시)", "The patient's head points to the left side of the frame (9 o'clock position)."),
@@ -449,10 +458,55 @@ public static class PromptLibrary
         "현대적인 디지털 페인팅 스타일. 캐릭터의 얼굴 비율은 애니메이션이나 게임 캐릭터처럼 이상적이고 예쁘게(얼굴형, 큰 눈). " +
         "깨끗한 선화와 부드러운 명암 표현, 고해상도.";
 
+    // 웹툰 장르별 화풍. 그림체만 다르고 배경(한국 치과)·글자 금지 규칙은 아래 꼬리로 똑같이 붙인다.
+    private const string WebtoonTail =
+        " The only saturated blue is where specifically requested. " +
+        "Set in a present-day South Korean dental clinic (not an American or European dental office) unless stated otherwise, with Korean staff and patients. " +
+        "No text, no letters, no speech bubbles, no sound effects, no panels, no logos, no watermark. " +
+        "Full-bleed image with no border or frame; no posters, calendars, charts or signs with any writing or symbols.";
+
+    public const string RomanceWebtoonStyle =
+        "Korean romance webtoon illustration style: beautiful idealized faces with large glossy eyes and long lashes, slim elegant proportions, " +
+        "fine thin line art, smooth glossy cel shading with soft bloom and gentle sparkles of light, flowing detailed hair, " +
+        "dreamy pastel pink and warm cream palette, soft backlight and rim light." + WebtoonTail;
+
+    public const string GagWebtoonStyle =
+        "Korean slice-of-life comedy webtoon style: simple bold even line art, flat bright colors with minimal shading, " +
+        "slightly cartoonish proportions with rounder heads, big exaggerated expressive faces and reactions (sweat drops, wide eyes), " +
+        "clean simplified backgrounds, cheerful bright lighting." + WebtoonTail;
+
+    public const string HealingWebtoonStyle =
+        "Korean healing webtoon style: soft watercolor-like coloring with visible gentle brush texture, thin light sketchy line art in warm brown instead of black, " +
+        "pastel mint, peach and cream palette, cozy warm sunlight through windows, calm gentle expressions, airy and comforting atmosphere." + WebtoonTail;
+
+    public const string RealisticWebtoonStyle =
+        "Semi-realistic Korean drama webtoon style: realistic anatomy and proportions, detailed painterly rendering of faces, skin and fabric, " +
+        "precise line art that fades into painted shading, accurate dental equipment, natural clinic lighting with soft shadows, " +
+        "grounded muted palette, looks like a high-budget digital webtoon rather than a photograph." + WebtoonTail;
+
+    public const string ThrillerWebtoonStyle =
+        "Korean thriller webtoon style: sharp angular line art, heavy black shadows and strong chiaroscuro, desaturated cold palette of gray and teal " +
+        "with one warm accent, dramatic low or high camera angles, tense serious expressions, cinematic hard lighting from a single source." + WebtoonTail;
+
+    public const string ChibiWebtoonStyle =
+        "Cute Korean webtoon SD (super-deformed) chibi style: characters 2 to 3 heads tall with big heads and tiny bodies, round simple faces with large shiny eyes, " +
+        "thick soft rounded outlines, flat bright pastel colors with simple one-step shading, playful and adorable mood." + WebtoonTail;
+
+    public const string MonochromeWebtoonStyle =
+        "Black-and-white Korean comic style: crisp black ink line art with varied pen pressure, gray screentone shading and cross-hatching, " +
+        "no color at all, high contrast, clean white highlights, detailed linework on hair and clothing." + WebtoonTail;
+
     public static IReadOnlyList<PromptPreset> Styles { get; } =
     [
         new("없음 (장면 프리셋에 포함)", ""),
         new("한국 웹툰 (게임 에셋)", WebtoonStyle),
+        new("웹툰: 로맨스 (화사한 미형)", RomanceWebtoonStyle),
+        new("웹툰: 일상 · 개그", GagWebtoonStyle),
+        new("웹툰: 힐링 (수채 파스텔)", HealingWebtoonStyle),
+        new("웹툰: 반실사 드라마", RealisticWebtoonStyle),
+        new("웹툰: 스릴러 (진한 명암)", ThrillerWebtoonStyle),
+        new("웹툰: SD 꼬마 캐릭터", ChibiWebtoonStyle),
+        new("웹툰: 흑백 펜선 + 스크린톤", MonochromeWebtoonStyle),
         new("실사 다큐 사진", PhotoStyle),
         new("디지털 페인팅 (웹툰 캐릭터)", PaintingStyle),
     ];
@@ -577,6 +631,22 @@ public static class PromptLibrary
 
             Documentary clinical photography, photorealistic, no beauty retouching. No text, no watermark, no excessive blood, no gore, no deformed or extra teeth, no braces.
             """, "", "입안 장면: 인물 외모·복장 문장은 자동으로 빠진다(넓은 구도를 부르기 때문)."),
+        new("실사 C10: 의사 뒤 하이앵글 충치 치료 (의사 얼굴 없음)",
+            """
+            Ultra-realistic candid photograph of cavity treatment in a modern Korean dental clinic, taken from just behind and above the standing dentist, looking steeply down (about 50–60 degrees) at the fully reclined patient.
+
+            Framing: the dentist's torso, arms and gloved hands fill the right side of the frame; the dentist's head and face are cut off above the top edge of the frame. The patient's head lies on the headrest in the lower center, pointing toward the bottom-right of the frame, so the face is seen upside down from above with the chin toward the top-left; the patient's body and a light blue disposable bib extend toward the top-left.
+
+            The patient: a young Korean woman with long dark hair spread on the headrest, eyes squeezed shut and brows drawn together in a slight frown of discomfort, mouth opened wide.
+
+            Action: the dentist's upper gloved hand holds a slim silver high-speed handpiece with a thin bur angled down into the patient's mouth; the other gloved hand holds a round dental mirror inside the mouth and rests gently against the patient's cheek. One white-gloved hand of an assistant enters from the bottom-left corner holding a suction tip or air-water syringe. A fine mist of water spray is visible in the air near the dental unit.
+
+            The dentist wears a long-sleeved ivory isolation gown with elastic cuffs over dark scrubs and white latex gloves. Dental unit arms, hoses and the instrument console are softly blurred in the background, light gray chair upholstery.
+
+            Soft natural clinic lighting, shallow depth of field, authentic skin and glove textures, documentary style, not a staged advertisement. No text, no watermark, no excessive blood, no deformed hands or extra fingers.
+            """, "",
+            "의사·위생사 얼굴·머리 설정은 자동으로 빠진다(얼굴이 화면 밖이라). 뒤에 진료 부위나 환자 차이를 적는다.",
+            StaffFacesHidden: true),
         new("웹툰: 충치 제거 입안 클로즈업",
             "Korean webtoon panel, extreme close-up inside a patient's wide-open mouth seen from the dentist's eyes. A lower molar in the center has a dark brown cavity; " +
             "the thin bur of a high-speed handpiece held by a white-gloved hand is drilling out the decay with a little spray of water, a dental mirror holds the cheek aside. " +
@@ -615,6 +685,8 @@ public static class PromptLibrary
             "The dentist holds a high-speed handpiece in the right hand and a dental mirror in the left hand.", true, TreatmentOnly: true),
         new("핸드피스에 버 장착 (아래 향함)",
             "The high-speed handpiece has a thin bur fitted, pointing down toward the teeth.", true, TreatmentOnly: true),
+        new("위생사는 손만 (석션, 화면 왼쪽 아래)",
+            "The dental hygienist is not shown except for one white-gloved hand entering from the bottom-left corner of the frame, holding a suction tip or air-water syringe near the patient's mouth.", false, TreatmentOnly: true),
         new("골드 인레이 ≠ 크라운",
             "Gold inlays are embedded in the occlusal surfaces of the molars — not gold crowns, not braces.", false),
         new("초록 소공포 + dental bib",

@@ -386,15 +386,20 @@ public partial class MainWindowViewModel : ObservableObject
         // 입안 클로즈업에서는 얼굴·머리·복장 묘사가 넓은 구도를 불러오므로 뺀다(손·기구·치아만 보이는 장면).
         if (!IsIntraoral)
         {
+            // 의료진 얼굴이 화면 밖인 구도: 나이·헤어·마스크·안경 문장이 있으면 모델이 얼굴을 그리려 든다.
+            // 의사는 몸통이 보이니 가운·스크럽만 남기고, 위생사는 손만 나오니 전부 뺀다.
+            var facesHidden = StaffFacesHidden;
             if (IncludeDentist)
                 foreach (var slot in DentistSlots)
                 {
                     // 가운을 안 입으면 가운 색상 문장은 모순이라 뺀다.
                     if (slot == _dentistCoatColor && _dentistCoat.Selected.Key == PromptLibrary.NoCoatKey)
                         continue;
+                    if (facesHidden && slot.Id is not ("dentist.coat" or "dentist.coat_color" or "dentist.scrubs"))
+                        continue;
                     yield return slot.PromptText;
                 }
-            if (IncludeHygienist)
+            if (IncludeHygienist && !facesHidden)
                 foreach (var slot in HygienistSlots)
                     yield return slot.PromptText;
             if (IncludePatient)
@@ -413,6 +418,11 @@ public partial class MainWindowViewModel : ObservableObject
         foreach (var slot in CameraSlots.Where(s => !s.VideoOnly || IsVideoKind))
             yield return slot.PromptText;
     }
+
+    /// <summary>의료진 얼굴이 화면 밖인 구도인지: 시점이 '의사 뒤 위에서'이거나 그런 장면 프리셋.</summary>
+    private bool StaffFacesHidden =>
+        CameraSlots.Any(s => s.Selected.Key == PromptLibrary.FacelessViewKey)
+        || SelectedScene?.StaffFacesHidden == true;
 
     /// <summary>입안 클로즈업 장면인지: 샷 크기가 ECU 이거나 장면 프리셋이 구강 내부/입안 장면.</summary>
     private bool IsIntraoral =>
