@@ -292,6 +292,13 @@
                                         Style="{StaticResource DarkRadio}" />
                                 </StackPanel>
 
+                                <TextBlock Style="{StaticResource SectionLabel}" Text="치과 상황" />
+                                <ItemsControl
+                                    Margin="0,4,0,0"
+                                    ItemsSource="{Binding SituationSlots}"
+                                    Style="{StaticResource SlotList}" />
+                                <TextBlock Style="{StaticResource HintText}" Text="상황을 고르면 그 장면에 맞지 않는 칸(치료 종류·치식 차트 등)은 숨겨지고 프롬프트에서도 빠진다." />
+
                                 <TextBlock Style="{StaticResource SectionLabel}" Text="장면 프리셋" />
                                 <ComboBox
                                     ItemsSource="{Binding Scenes}"
@@ -410,7 +417,7 @@
                                     Style="{StaticResource SlotList}" />
 
                                 <!--  치식 차트: 치아를 눌러 고른 뒤 상태 칩을 누른다. settings.json 에 저장된다.  -->
-                                <StackPanel IsEnabled="{Binding IncludePatient}">
+                                <StackPanel IsEnabled="{Binding IncludePatient}" Visibility="{Binding ShowToothChart, Converter={StaticResource BoolToVis}}">
                                     <DockPanel Margin="0,10,0,4">
                                         <Button
                                             Width="76"
@@ -507,7 +514,7 @@
                                     <TextBlock Style="{StaticResource HintText}" Text="{Binding ToothChartSummary}" />
                                 </StackPanel>
 
-                                <DockPanel Margin="0,14,0,0">
+                                <DockPanel Margin="0,14,0,0" Visibility="{Binding ShowTreatmentSection, Converter={StaticResource BoolToVis}}">
                                     <Button
                                         Width="60"
                                         Height="22"
@@ -590,7 +597,7 @@
                                 </ItemsControl>
 
                                 <TextBlock Style="{StaticResource SectionLabel}" Text="치과 규칙 (프롬프트 끝에 붙음)" />
-                                <TextBlock Style="{StaticResource HintText}" Text="진료 상황을 상담·양치 등으로 고르면 ★ 규칙(진료 중 전용)은 자동으로 빠진다." />
+                                <TextBlock Style="{StaticResource HintText}" Text="치과 상황을 상담·양치 등으로 고르면 ★ 규칙(진료 중 전용)은 자동으로 빠진다." />
                                 <ItemsControl ItemsSource="{Binding Rules}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>

@@ -47,11 +47,14 @@ public partial class MainWindowViewModel : ObservableObject
             tooth.Condition = DentalChart.Conditions.FirstOrDefault(c => c.Key == key && !string.IsNullOrEmpty(key)) ?? DentalChart.Normal;
         }
 
+        ApplySituation();
         foreach (var slot in AllSlots)
             slot.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName != nameof(OptionSlot.Selected))
                     return;
+                if (slot == _situation)
+                    ApplySituation();
                 if (slot == _dentistGender || slot == _hygienistGender)
                     SyncHairOptions();
                 if (CharacterSlots.Contains(slot))
@@ -159,17 +162,38 @@ public partial class MainWindowViewModel : ObservableObject
         _patientTeeth,
     ];
 
-    private readonly OptionSlot _situation = new("treatment.situation", "진료 상황", PromptLibrary.Situations) { Group = "진료 내용" };
+    private readonly OptionSlot _situation = new("treatment.situation", "상황 고르기", PromptLibrary.Situations) { Group = "치과 상황" };
+    private IReadOnlyList<OptionSlot>? _situationSlots;
     private IReadOnlyList<OptionSlot>? _treatmentSlots;
+
+    /// <summary>접수·상담·진료 중·결제 같은 장면의 큰 틀. 화면에서는 '종류' 바로 아래에 둔다.</summary>
+    public IReadOnlyList<OptionSlot> SituationSlots => _situationSlots ??= [_situation];
 
     /// <summary>상담·양치·접수처럼 진료 중이 아닌 상황을 골랐는지. 이때 진료용 규칙은 빠진다.</summary>
     public bool IsNonTreatmentSituation =>
         _situation.IsSet && _situation.Selected.Key != PromptLibrary.TreatmentSituationKey;
 
+    /// <summary>치식 차트를 보일지(접수·수납처럼 입안이 안 보이는 상황에서는 숨긴다).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinalPrompt))]
+    private bool _showToothChart = true;
+
+    /// <summary>진료 내용 · 진료실 칸이 하나라도 보이는지(머리글도 같이 숨긴다).</summary>
+    public bool ShowTreatmentSection => TreatmentSlots.Any(s => s.IsVisible);
+
+    /// <summary>고른 치과 상황에 맞지 않는 칸을 숨긴다. 고른 값은 남겨 둔다.</summary>
+    private void ApplySituation()
+    {
+        var hidden = PromptLibrary.SituationHiddenSlots.GetValueOrDefault(_situation.Selected.Key) ?? [];
+        foreach (var slot in DentistSlots.Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots))
+            slot.IsVisible = !hidden.Contains(slot.Id);
+        ShowToothChart = !hidden.Contains(PromptLibrary.ToothChartId);
+        OnPropertyChanged(nameof(ShowTreatmentSection));
+    }
+
     /// <summary>무슨 치료를 어느 치아에 하는지. 입안 장면은 이게 구체적이어야 잘 나온다.</summary>
     public IReadOnlyList<OptionSlot> TreatmentSlots => _treatmentSlots ??=
     [
-        _situation,
         new("treatment.kind", "치료 종류", PromptLibrary.Treatments) { Group = "진료 내용" },
         new("treatment.tooth", "치아 위치", PromptLibrary.ToothPositions) { Group = "진료 내용" },
         new("treatment.detail", "입안 디테일", PromptLibrary.IntraoralDetails) { Group = "진료 내용" },
@@ -179,7 +203,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>settings.json 에 저장하는 칸(인물·진료). 카메라 구도는 매번 고른다.</summary>
     private IEnumerable<OptionSlot> CharacterSlots =>
-        DentistSlots.Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots);
+        SituationSlots.Concat(DentistSlots).Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots);
 
     private IEnumerable<OptionSlot> AllSlots => CameraSlots.Concat(CharacterSlots);
 
@@ -374,13 +398,16 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>프롬프트에 붙일 인물·카메라 문장. 인물이 먼저, 카메라가 뒤.</summary>
     private IEnumerable<string> OptionSentences()
     {
-        // 진료 내용·구강 상태를 먼저 둬야 모델이 '무엇을 그리는지'를 놓치지 않는다.
-        foreach (var slot in TreatmentSlots)
+        // 상황·진료 내용·구강 상태를 먼저 둬야 모델이 '무엇을 그리는지'를 놓치지 않는다.
+        // 숨긴 칸(지금 상황에 맞지 않는 칸)은 고른 값이 남아 있어도 넣지 않는다.
+        foreach (var slot in SituationSlots.Concat(TreatmentSlots).Where(s => s.IsVisible))
             yield return slot.PromptText;
         if (IncludePatient)
         {
-            yield return _patientTeeth.PromptText;
-            yield return ToothChartSentence();
+            if (_patientTeeth.IsVisible)
+                yield return _patientTeeth.PromptText;
+            if (ShowToothChart)
+                yield return ToothChartSentence();
         }
 
         // 입안 클로즈업에서는 얼굴·머리·복장 묘사가 넓은 구도를 불러오므로 뺀다(손·기구·치아만 보이는 장면).
@@ -390,7 +417,7 @@ public partial class MainWindowViewModel : ObservableObject
             // 의사는 몸통이 보이니 가운·스크럽만 남기고, 위생사는 손만 나오니 전부 뺀다.
             var facesHidden = StaffFacesHidden;
             if (IncludeDentist)
-                foreach (var slot in DentistSlots)
+                foreach (var slot in DentistSlots.Where(s => s.IsVisible))
                 {
                     // 가운을 안 입으면 가운 색상 문장은 모순이라 뺀다.
                     if (slot == _dentistCoatColor && _dentistCoat.Selected.Key == PromptLibrary.NoCoatKey)
@@ -400,13 +427,13 @@ public partial class MainWindowViewModel : ObservableObject
                     yield return slot.PromptText;
                 }
             if (IncludeHygienist && !facesHidden)
-                foreach (var slot in HygienistSlots)
+                foreach (var slot in HygienistSlots.Where(s => s.IsVisible))
                     yield return slot.PromptText;
             if (IncludePatient)
             {
                 // 첨부 이미지의 환자를 쓰면 헤어·옷은 사진 그대로 — 다른 묘사가 섞이면 옷이 바뀐다.
                 var fromReference = _patientGender.Selected.Key == PromptLibrary.PatientFromReferenceKey;
-                foreach (var slot in PatientSlots.Where(s => s != _patientTeeth))
+                foreach (var slot in PatientSlots.Where(s => s != _patientTeeth && s.IsVisible))
                 {
                     if (fromReference && (slot == _patientHair || slot == _patientOutfit))
                         continue;
@@ -798,7 +825,7 @@ public partial class MainWindowViewModel : ObservableObject
             Kind = Kind,
             NewChat = !ContinueChat,
             References = References.ToList(),
-            ExampleKeys = CameraSlots.Concat(TreatmentSlots.Where(s => !s.Id.StartsWith("room.", StringComparison.Ordinal)))
+            ExampleKeys = CameraSlots.Concat(SituationSlots).Concat(TreatmentSlots.Where(s => !s.Id.StartsWith("room.", StringComparison.Ordinal)))
                 .Where(s => s.IsVisible && s.IsSet)
                 .Select(s => s.Selected.Key)
                 .Where(k => !string.IsNullOrEmpty(k))

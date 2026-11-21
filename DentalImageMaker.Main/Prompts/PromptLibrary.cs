@@ -257,7 +257,7 @@ public static class PromptLibrary
         new("", "지정 안 함", ""),
         new("teeth.caries", "어금니 충치 (갈색·검은 점)", "Oral condition: the molars show visible tooth decay — brown and black carious spots in the grooves of the chewing surfaces."),
         new("teeth.deep_caries", "깊은 충치 (구멍)", "Oral condition: one molar has a deep cavity, a dark brown-black hole of soft decayed dentin on the chewing surface, surrounded by chalky white enamel."),
-        new("teeth.gold", "금 인레이", "Oral condition: several molars have old gold inlays embedded in the chewing surfaces — not gold crowns, not braces."),
+        new("teeth.gold", "금 인레이", "Oral condition: several molars have shiny gold inlays embedded in the middle of their chewing surfaces — small gold patches inside otherwise white teeth, clearly visible. Not gold crowns covering whole teeth, not braces."),
         new("teeth.resin", "흰 레진 충전", "Oral condition: some molars have tooth-colored white resin fillings."),
         new("teeth.amalgam", "은색 아말감", "Oral condition: some molars have old dark silver amalgam fillings."),
         new("teeth.braces", "교정 장치", "Oral condition: {who} wears metal orthodontic braces with brackets and wires."),
@@ -265,7 +265,7 @@ public static class PromptLibrary
         new("teeth.healthy", "건강한 치아", "Oral condition: clean, healthy white teeth and pink gums."),
     ];
 
-    // ---------- 진료 상황 ----------
+    // ---------- 치과 상황 ----------
     // '진료 중'이 아닌 상황(situ.* 중 TreatmentSituationKey 외)을 고르면 진료용 규칙이 빠진다.
     public const string TreatmentSituationKey = "situ.treatment";
 
@@ -287,6 +287,31 @@ public static class PromptLibrary
         new("situ.payment", "수납·예약", "Situation: the patient pays and books the next appointment at the reception counter."),
         new("situ.finish", "진료 끝 (bib 벗기)", "Situation: treatment is finished — the chair is raised, the dentist pulls down the mask and the hygienist removes the patient's bib."),
     ];
+
+    /// <summary>치식 차트를 숨길 때 쓰는 이름(칸 Id 가 아니라 차트 전체).</summary>
+    public const string ToothChartId = "patient.chart";
+
+    // 상황마다 그 장면에 없는(또는 상황 문장과 부딪치는) 칸. 화면에서 숨기고 프롬프트에서도 뺀다.
+    // 고른 값은 지우지 않으므로 '진료 중'으로 돌아오면 그대로 되살아난다.
+    private static readonly string[] Oral = ["treatment.kind", "treatment.tooth", "treatment.detail", "patient.teeth", ToothChartId];
+    private static readonly string[] OutOfChair = [.. Oral, "room.chair", "room.recline", "patient.cover", "patient.state"];
+
+    public static IReadOnlyDictionary<string, string[]> SituationHiddenSlots { get; } = new Dictionary<string, string[]>
+    {
+        ["situ.consult"] = [.. Oral, "room.recline"],
+        ["situ.rinse"] = [.. Oral, "room.recline", "patient.state"],
+        ["situ.reception"] = OutOfChair,
+        ["situ.payment"] = OutOfChair,
+        ["situ.xray"] = OutOfChair,
+        ["situ.guide"] = [.. Oral, "room.recline", "patient.state"],
+        ["situ.anesthesia"] = ["treatment.kind"],
+        ["situ.intraoral_cam"] = ["treatment.kind", "treatment.detail"],
+        ["situ.impression"] = ["treatment.kind", "treatment.tooth", "treatment.detail"],
+        ["situ.mirror_check"] = ["treatment.kind", "treatment.tooth", "treatment.detail", "room.recline", "patient.state"],
+        ["situ.brushing_edu"] = [.. Oral, "room.recline", "patient.state"],
+        ["situ.child_calm"] = [.. Oral, "patient.gender", "patient.state"],
+        ["situ.finish"] = [.. Oral, "room.recline", "patient.state"],
+    };
 
     // ---------- 진료 내용 ----------
     // 입안 장면이 잘 나오려면 '무엇을 어디에 하는지'를 구체적으로 적어야 한다.
@@ -369,7 +394,7 @@ public static class PromptLibrary
         new("view.observer", "관찰자 (3인칭)", "Camera viewpoint: a third-person observer standing beside the dental chair."),
         new("view.dentist_pov", "치과의사 시점 POV", "Camera viewpoint: first-person POV from the dentist's eyes, looking down into the patient's open mouth; only the dentist's gloved hands and instruments are visible."),
         new("view.patient_pov", "환자 시점 POV", "Camera viewpoint: first-person POV from the patient lying in the chair, looking up at the dentist's masked face and the dental light above."),
-        new("view.hygienist_pov", "위생사 시점 POV", "Camera viewpoint: first-person POV from the dental hygienist on the patient's left side, holding the suction."),
+        new("view.hygienist_pov", "위생사 시점 POV", "Camera viewpoint: first-person POV through the eyes of the dental hygienist sitting on the patient's left side; the hygienist's own gloved hands holding a suction tip appear in the lower-left foreground, and the dentist works across the chair on the far side."),
         new("view.ots", "의사 어깨 너머 (OTS)", "Camera viewpoint: over the dentist's shoulder, looking down at the patient."),
         new(FacelessViewKey, "의사 뒤 위에서 (의사 얼굴 화면 밖)",
             "Camera viewpoint: from just behind and above the standing dentist, looking down past the dentist's shoulder at the reclined patient. " +
@@ -389,7 +414,7 @@ public static class PromptLibrary
         new("angle.low", "로우앵글", "Camera angle: low angle looking up."),
         new("angle.worm", "웜즈아이 (극단적 로우)", "Camera angle: extreme low worm's-eye view looking straight up."),
         new("angle.side", "사이드뷰 (측면 90°)", "Camera angle: side view, perpendicular to the dental chair."),
-        new("angle.dutch", "더치앵글 (기울임)", "Camera angle: Dutch angle, the frame tilted about 15 degrees for tension."),
+        new("angle.dutch", "더치앵글 (기울임)", "Camera angle: strong Dutch angle — the camera is rolled about 25 degrees, so walls, ceiling lines and the monitor are clearly slanted diagonally across the frame, creating tension."),
     ];
 
     public static IReadOnlyList<PromptOption> ShotSizes { get; } =
