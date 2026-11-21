@@ -4,7 +4,7 @@ using System.Windows.Media;
 namespace DentalImageMaker.Forms;
 
 /// <summary>
-/// 색만 다른 선택지(가운 색상 · 스크럽 색상 · 위생사 복장)는 예제 그림 대신 색 견본을 보여 준다.
+/// 색만 다른 선택지(가운 색상 · 스크럽 색상 · 위생사 복장 · 체어 시트 색)는 예제 그림 대신 색 견본을 보여 준다.
 /// 예제 그림이 있으면 그쪽이 먼저다(<see cref="ExampleStore.Load"/>).
 /// </summary>
 public static class ColorSwatch
@@ -42,6 +42,23 @@ public static class ColorSwatch
         ["hygoutfit.skyblue"] = "#8EC3E8",
         ["hygoutfit.black"] = "#1B1B1F",
         ["hygoutfit.white"] = "#FFFFFF",
+
+        // 체어 시트 색
+        ["chair.skyblue"] = "#A9D4F0",
+        ["chair.mint"] = "#AEE0CC",
+        ["chair.teal"] = "#1E8A8A",
+        ["chair.navy"] = "#1F2E4D",
+        ["chair.blue"] = "#0047AB",
+        ["chair.white"] = "#FFFFFF",
+        ["chair.gray"] = "#C8CCD2",
+        ["chair.charcoal"] = "#2A2C30",
+        ["chair.beige"] = "#EADBC0",
+        ["chair.brown"] = "#8A5A3C",
+        ["chair.pink"] = "#F6C6D2",
+        ["chair.yellow"] = "#F7E39A",
+        ["chair.orange"] = "#F28C28",
+        ["chair.red"] = "#7A1F2E",
+        ["chair.purple"] = "#B9A5DE",
     };
 
     private static readonly Dictionary<string, ImageSource> Cache = new();

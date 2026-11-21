@@ -1,0 +1,359 @@
+[
+ {
+  "name": "pcover.glasses",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient wears clear protective safety glasses. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "pstate.wide",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient lies fully reclined with eyes closed and mouth opened as wide as possible. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "pstate.grimace",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient lies fully reclined, eyes squeezed tightly shut, brows drawn together in a slight frown of discomfort, mouth opened wide. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "pstate.tense",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient looks tense, eyebrows raised, hands tightly clasped on the stomach, mouth wide open. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "pstate.relaxed",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient lies relaxed and calm with mouth open. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "pstate.scared",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient looks scared with teary eyes, gripping the armrest. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "pstate.looking",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient has eyes open, looking up at the dentist. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "pstate.sitting",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a young Korean woman patient in her 20s in a dental chair, seen from a slight high angle so her face and upper body are clearly visible; a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask beside her. The patient sits upright in the dental chair, mouth closed, listening to the dentist. Make this detail the clear focus. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.caries",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: the molars show visible tooth decay — brown and black carious spots in the grooves of the chewing surfaces. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.deep_caries",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: one molar has a deep cavity, a dark brown-black hole of soft decayed dentin on the chewing surface, surrounded by chalky white enamel. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.gold",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: several molars have old gold inlays embedded in the chewing surfaces — not gold crowns, not braces. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.resin",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: some molars have tooth-colored white resin fillings. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.amalgam",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: some molars have old dark silver amalgam fillings. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.braces",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: the patient wears metal orthodontic braces with brackets and wires. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.tartar",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: yellowish tartar along the gumline and slightly red, swollen gums. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "teeth.healthy",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. Oral condition: clean, healthy white teeth and pink gums. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.reception",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: at the clinic reception desk, a staff member greets the patient who is checking in; waiting room sofa in the background. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.guide",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: a dental hygienist guides the patient to sit down in the dental chair and puts a bib on them. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.xray",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: the patient stands inside a panoramic dental X-ray machine, biting on the bite block, wearing a lead apron; the hygienist adjusts the position. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.intraoral_cam",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: the hygienist takes pictures inside the patient's mouth with a pen-shaped intraoral camera; the teeth appear on a monitor. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.impression",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: an impression tray filled with pink alginate is pressed onto the patient's teeth. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.brushing_edu",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: the hygienist demonstrates correct tooth brushing on a large tooth model to the patient. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.child_calm",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: the dentist kneels to eye level and comforts a nervous child patient before treatment, smiling. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.payment",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: the patient pays and books the next appointment at the reception counter. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "situ.finish",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Situation: treatment is finished — the chair is raised, the dentist pulls down the mask and the hygienist removes the patient's bib. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "treat.resin_fill",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Treatment: resin filling — white composite resin is being placed in the prepared cavity and a blue curing light is held over the tooth. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "treat.scaling",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Treatment: scaling — an ultrasonic scaler tip removes tartar along the gumline with a fine water spray. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "treat.extraction",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Treatment: tooth extraction — dental forceps grip the tooth, with gauze nearby; no excessive blood. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "treat.implant",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Treatment: dental implant placement — a surgical implant motor drill works in the gum where a tooth is missing, under a green surgical drape. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "treat.fluoride",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask, a dental hygienist in mint scrubs, and a young Korean woman patient in her 20s. Treatment: fluoride varnish is brushed onto the teeth with a small applicator. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "tooth.lower_right_molar",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. The treated tooth is a lower right molar (the patient's right side). No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "tooth.lower_left_molar",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. The treated tooth is a lower left molar (the patient's left side). No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "tooth.upper_right_molar",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. The treated tooth is an upper right molar, seen in the dental mirror. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "tooth.upper_left_molar",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. The treated tooth is an upper left molar, seen in the dental mirror. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "tooth.upper_front",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. The treated tooth is an upper front incisor. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "tooth.lower_front",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. The treated tooth is a lower front incisor. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "oral.retractor",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. A clear plastic cheek retractor holds the lips wide open. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "oral.mirror_reflection",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Close-up of a patient's wide-open mouth in a dental chair, the dentist's gloved hands holding a dental mirror, teeth clearly visible under the dental light. The treated tooth is clearly visible as a reflection in the round dental mirror. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "recline.upright",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Side view of a dental chair in a bright, clean, modern Korean dental clinic treatment room with a young Korean woman patient in her 20s on it, the full chair and backrest angle clearly visible from the side. The dental chair backrest is upright, about 100 degrees from the seat; the patient sits up straight. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "recline.slight",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Side view of a dental chair in a bright, clean, modern Korean dental clinic treatment room with a young Korean woman patient in her 20s on it, the full chair and backrest angle clearly visible from the side. The dental chair backrest is slightly reclined, about 120 degrees from the seat; the patient leans back a little. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "recline.half",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Side view of a dental chair in a bright, clean, modern Korean dental clinic treatment room with a young Korean woman patient in her 20s on it, the full chair and backrest angle clearly visible from the side. The dental chair is half reclined, the backrest about 140 degrees from the seat, the patient's upper body at roughly 45 degrees. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "recline.mostly",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Side view of a dental chair in a bright, clean, modern Korean dental clinic treatment room with a young Korean woman patient in her 20s on it, the full chair and backrest angle clearly visible from the side. The dental chair is mostly reclined, the backrest about 160 degrees from the seat, the patient's upper body nearly horizontal. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "recline.flat",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Side view of a dental chair in a bright, clean, modern Korean dental clinic treatment room with a young Korean woman patient in her 20s on it, the full chair and backrest angle clearly visible from the side. The dental chair is fully reclined flat, the backrest at 180 degrees; the patient lies completely horizontal on the back, head level with the knees. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "recline.supine",
+  "prompt": "Generate an image. Square 1:1. Korean webtoon style illustration, clean line art, soft cel shading, bright and friendly. Side view of a dental chair in a bright, clean, modern Korean dental clinic treatment room with a young Korean woman patient in her 20s on it, the full chair and backrest angle clearly visible from the side. The dental chair is fully reclined with the head slightly lower than the feet (supine position for upper-jaw treatment). No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "view.hygienist_pov",
+  "prompt": "Generate an image. Square 1:1. Photorealistic documentary photograph, natural light. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask treats a young Korean woman patient in her 20s who lies reclined in the dental chair with a light blue bib. Camera viewpoint: first-person POV from the dental hygienist on the patient's left side, holding the suction. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "angle.dutch",
+  "prompt": "Generate an image. Square 1:1. Photorealistic documentary photograph, natural light. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask treats a young Korean woman patient in her 20s who lies reclined in the dental chair with a light blue bib. Camera angle: Dutch angle, the frame tilted about 15 degrees for tension. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "head.12",
+  "prompt": "Generate an image. Square 1:1. Photorealistic documentary photograph, natural light. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask treats a young Korean woman patient in her 20s who lies reclined in the dental chair with a light blue bib. The patient's head points toward the top of the frame (12 o'clock position), feet toward the bottom. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "head.4",
+  "prompt": "Generate an image. Square 1:1. Photorealistic documentary photograph, natural light. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask treats a young Korean woman patient in her 20s who lies reclined in the dental chair with a light blue bib. The patient's head points toward the bottom-right of the frame (about 4–5 o'clock position), body extending toward the top-left; seen from above, the face appears upside down with the chin toward the top-left. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "head.10",
+  "prompt": "Generate an image. Square 1:1. Photorealistic documentary photograph, natural light. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask treats a young Korean woman patient in her 20s who lies reclined in the dental chair with a light blue bib. The patient's head is angled toward the top-left of the frame (10 o'clock position). No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "lens.50",
+  "prompt": "Generate an image. Square 1:1. Photorealistic documentary photograph, natural light. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask treats a young Korean woman patient in her 20s who lies reclined in the dental chair with a light blue bib. Lens: 50mm standard lens, natural perspective. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ },
+ {
+  "name": "lens.85",
+  "prompt": "Generate an image. Square 1:1. Photorealistic documentary photograph, natural light. In a bright, clean, modern Korean dental clinic treatment room, a Korean female dentist in her late 20s with a low bun, white coat over navy scrubs, surgical mask treats a young Korean woman patient in her 20s who lies reclined in the dental chair with a light blue bib. Lens: 85mm telephoto lens, compressed background. No text, no letters, no speech bubbles, no logos, no watermark.",
+  "provider": "Gemini",
+  "kind": "Image",
+  "newChat": true
+ }
+]
