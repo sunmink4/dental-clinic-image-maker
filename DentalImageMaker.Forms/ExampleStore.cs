@@ -35,11 +35,12 @@ public static class ExampleStore
         {
             // 기본 예제가 없는 선택지도 있다(위생사 시점 등). 없으면 리소스 조회가 예외를 낸다.
             if (Application.GetResourceStream(pack) is null)
-                return null;
+                return ColorSwatch.Get(key);
         }
         catch (IOException)
         {
-            return null;
+            // 색만 다른 선택지(가운 · 스크럽 색 등)는 그림 대신 색 견본을 보여 준다. 그 밖에는 null.
+            return ColorSwatch.Get(key);
         }
         return Decode(pack, decodeWidth);
     }
