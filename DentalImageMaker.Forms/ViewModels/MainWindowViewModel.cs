@@ -35,6 +35,7 @@ public partial class MainWindowViewModel : ObservableObject
         _includeDentist = settings.IncludeDentist;
         _includeHygienist = settings.IncludeHygienist;
         _includePatient = settings.IncludePatient;
+        _isMouthMode = settings.MouthMode;
         _dentistGender.SelectByKey(settings.SlotSelections.GetValueOrDefault(_dentistGender.Id));
         _hygienistGender.SelectByKey(settings.SlotSelections.GetValueOrDefault(_hygienistGender.Id));
         SyncHairOptions();
@@ -55,8 +56,6 @@ public partial class MainWindowViewModel : ObservableObject
                     return;
                 if (slot == _situation)
                     ApplySituation();
-                if (slot == _mouthFrame)
-                    ApplyMouthFrame();
                 if (slot == _dentistGender || slot == _hygienistGender)
                     SyncHairOptions();
                 if (CharacterSlots.Contains(slot))
@@ -173,7 +172,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>상담·양치·접수처럼 진료 중이 아닌 상황을 골랐는지. 이때 진료용 규칙은 빠진다.</summary>
     public bool IsNonTreatmentSituation =>
-        _situation.IsSet && _situation.Selected.Key != PromptLibrary.TreatmentSituationKey;
+        _situation.IsVisible && _situation.IsSet && _situation.Selected.Key != PromptLibrary.TreatmentSituationKey;
 
     /// <summary>치식 차트를 보일지(접수·수납처럼 입안이 안 보이는 상황에서는 숨긴다).</summary>
     [ObservableProperty]
@@ -183,16 +182,48 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>진료 내용 · 진료실 칸이 하나라도 보이는지(머리글도 같이 숨긴다).</summary>
     public bool ShowTreatmentSection => TreatmentSlots.Any(s => s.IsVisible);
 
-    /// <summary>고른 치과 상황에 맞지 않는 칸을 숨긴다. 고른 값은 남겨 둔다.</summary>
+    /// <summary>만들 장면. false = 치과 상황(진료실 장면), true = 환자 입안(입안 클로즈업).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSceneMode), nameof(FinalPrompt))]
+    private bool _isMouthMode;
+
+    public bool IsSceneMode
+    {
+        get => !IsMouthMode;
+        set => IsMouthMode = !value;
+    }
+
+    partial void OnIsMouthModeChanged(bool value)
+    {
+        ApplySituation();
+        SaveCharacter();
+    }
+
+    /// <summary>환자 입안 모드에서 숨기는 카메라 칸: 입안의 '보는 방향 · 범위'와 겹친다.</summary>
+    private static readonly string[] MouthModeHiddenCamera = ["camera.view", "camera.angle", "camera.shot", "camera.head"];
+
+    /// <summary>
+    /// 지금 모드와 치과 상황에 맞지 않는 칸을 숨긴다(숨긴 칸은 프롬프트에서도 빠진다). 고른 값은 남겨 둔다.
+    /// 치과 상황 모드: 상황표대로 숨기고 입안 칸은 모두 숨긴다.
+    /// 환자 입안 모드: 상황 · 의료진 · 겹치는 카메라 칸을 숨기고 입안 칸을 보인다.
+    /// </summary>
     private void ApplySituation()
     {
-        var hidden = PromptLibrary.SituationHiddenSlots.GetValueOrDefault(_situation.Selected.Key) ?? [];
-        foreach (var slot in DentistSlots.Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots).Concat(MouthSlots))
+        var hidden = IsMouthMode
+            ? []
+            : PromptLibrary.SituationHiddenSlots.GetValueOrDefault(_situation.Selected.Key) ?? [];
+        _situation.IsVisible = !IsMouthMode;
+        foreach (var slot in DentistSlots.Concat(HygienistSlots))
+            slot.IsVisible = !IsMouthMode && !hidden.Contains(slot.Id);
+        foreach (var slot in PatientSlots.Concat(TreatmentSlots))
             slot.IsVisible = !hidden.Contains(slot.Id);
+        foreach (var slot in MouthSlots)
+            slot.IsVisible = IsMouthMode;
+        foreach (var slot in CameraSlots.Where(s => !s.VideoOnly))
+            slot.IsVisible = !(IsMouthMode && MouthModeHiddenCamera.Contains(slot.Id));
         ShowToothChart = !hidden.Contains(PromptLibrary.ToothChartId);
         OnPropertyChanged(nameof(ShowTreatmentSection));
-        OnPropertyChanged(nameof(ShowMouthSection));
-        ApplyMouthFrame();
+        OnPropertyChanged(nameof(FinalPrompt));
     }
 
     /// <summary>무슨 치료를 어느 치아에 하는지. 입안 장면은 이게 구체적이어야 잘 나온다.</summary>
@@ -210,7 +241,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly OptionSlot _mouthFrame = new("mouth.frame", "입안 범위 (화면에 어디까지)", PromptLibrary.MouthFrames) { Group = "환자 입안" };
     private IReadOnlyList<OptionSlot>? _mouthSlots;
 
-    /// <summary>입안을 크게 보여 주는 장면의 범위·방향·벌림·손. 범위를 고르면 카메라의 '샷 크기'는 숨긴다(겹치므로).</summary>
+    /// <summary>환자 입안 모드의 칸: 범위·방향·벌림·손. 이 모드에서는 카메라의 시점·앵글·샷·머리 방향을 숨긴다(겹치므로).</summary>
     public IReadOnlyList<OptionSlot> MouthSlots => _mouthSlots ??=
     [
         _mouthFrame,
@@ -219,15 +250,7 @@ public partial class MainWindowViewModel : ObservableObject
         new("mouth.hands", "손·기구", PromptLibrary.MouthHands) { Group = "환자 입안" },
     ];
 
-    public bool ShowMouthSection => MouthSlots.Any(s => s.IsVisible);
-
     private bool MouthFrameActive => _mouthFrame.IsVisible && _mouthFrame.IsSet;
-
-    /// <summary>입안 범위를 고르면 겹치는 '샷 크기' 칸을 숨긴다.</summary>
-    private void ApplyMouthFrame()
-    {
-        CameraSlots.First(s => s.Id == "camera.shot").IsVisible = !MouthFrameActive;
-    }
 
     [RelayCommand]
     private void ResetMouth()
@@ -357,6 +380,7 @@ public partial class MainWindowViewModel : ObservableObject
         _settings.IncludeDentist = IncludeDentist;
         _settings.IncludeHygienist = IncludeHygienist;
         _settings.IncludePatient = IncludePatient;
+        _settings.MouthMode = IsMouthMode;
         foreach (var slot in CharacterSlots)
             _settings.SlotSelections[slot.Id] = slot.Selected.Key;
         _settings.Save();
@@ -444,6 +468,10 @@ public partial class MainWindowViewModel : ObservableObject
                 yield return _patientTeeth.PromptText;
             if (ShowToothChart)
                 yield return ToothChartSentence();
+            // 입안 클로즈업에서도 성별·나이는 넣는다. 빼면 모델이 아무렇게나(흔히 남성으로) 그린다.
+            // 헤어·옷처럼 넓은 구도를 부르는 묘사만 아래(!IsIntraoral)에서 뺀다.
+            if (IsIntraoral && _patientGender.IsVisible)
+                yield return _patientGender.PromptText;
         }
 
         // 입안 클로즈업에서는 얼굴·머리·복장 묘사가 넓은 구도를 불러오므로 뺀다(손·기구·치아만 보이는 장면).
@@ -452,7 +480,7 @@ public partial class MainWindowViewModel : ObservableObject
             // 의료진 얼굴이 화면 밖인 구도: 나이·헤어·마스크·안경 문장이 있으면 모델이 얼굴을 그리려 든다.
             // 의사는 몸통이 보이니 가운·스크럽만 남기고, 위생사는 손만 나오니 전부 뺀다.
             var facesHidden = StaffFacesHidden;
-            if (IncludeDentist)
+            if (IncludeDentist && !IsMouthMode)
                 foreach (var slot in DentistSlots.Where(s => s.IsVisible))
                 {
                     // 가운을 안 입으면 가운 색상 문장은 모순이라 뺀다.
@@ -462,7 +490,7 @@ public partial class MainWindowViewModel : ObservableObject
                         continue;
                     yield return slot.PromptText;
                 }
-            if (IncludeHygienist && !facesHidden)
+            if (IncludeHygienist && !facesHidden && !IsMouthMode)
                 foreach (var slot in HygienistSlots.Where(s => s.IsVisible))
                     yield return slot.PromptText;
             if (IncludePatient)

@@ -31,6 +31,9 @@ public sealed class AppSettings
     /// <summary>프롬프트에 환자 설정을 넣을지. 칸마다 기본이 '지정 안 함'이라 켜 둬도 고른 것만 붙는다.</summary>
     public bool IncludePatient { get; set; } = true;
 
+    /// <summary>만들 장면: false = 치과 상황(진료실 장면), true = 환자 입안(입안 클로즈업).</summary>
+    public bool MouthMode { get; set; }
+
     /// <summary>인물 설정 칸에서 고른 값(칸 Id → 선택지 Key). 다음 실행에도 같은 주인공으로 시작한다.</summary>
     public Dictionary<string, string> SlotSelections { get; set; } = [];
 

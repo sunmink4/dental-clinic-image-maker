@@ -292,12 +292,52 @@
                                         Style="{StaticResource DarkRadio}" />
                                 </StackPanel>
 
-                                <TextBlock Style="{StaticResource SectionLabel}" Text="치과 상황" />
-                                <ItemsControl
-                                    Margin="0,4,0,0"
-                                    ItemsSource="{Binding SituationSlots}"
-                                    Style="{StaticResource SlotList}" />
-                                <TextBlock Style="{StaticResource HintText}" Text="상황을 고르면 그 장면에 맞지 않는 칸(치료 종류·치식 차트 등)은 숨겨지고 프롬프트에서도 빠진다." />
+                                <!--  만들 장면: 치과 상황(진료실 장면) / 환자 입안(입안 클로즈업). 고른 쪽 칸만 아래에 보인다.  -->
+                                <TextBlock Style="{StaticResource SectionLabel}" Text="만들 장면" />
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton
+                                        Content="치과 상황"
+                                        GroupName="Target"
+                                        IsChecked="{Binding IsSceneMode, Mode=TwoWay}"
+                                        Style="{StaticResource DarkRadio}" />
+                                    <RadioButton
+                                        Content="환자 입안"
+                                        GroupName="Target"
+                                        IsChecked="{Binding IsMouthMode, Mode=TwoWay}"
+                                        Style="{StaticResource DarkRadio}" />
+                                </StackPanel>
+
+                                <StackPanel Visibility="{Binding IsSceneMode, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Style="{StaticResource SectionLabel}" Text="치과 상황" />
+                                    <ItemsControl
+                                        Margin="0,4,0,0"
+                                        ItemsSource="{Binding SituationSlots}"
+                                        Style="{StaticResource SlotList}" />
+                                    <TextBlock Style="{StaticResource HintText}" Text="상황을 고르면 그 장면에 맞지 않는 칸(치료 종류·치식 차트 등)은 숨겨지고 프롬프트에서도 빠진다." />
+                                </StackPanel>
+
+                                <StackPanel Visibility="{Binding IsMouthMode, Converter={StaticResource BoolToVis}}">
+                                    <DockPanel Margin="0,14,0,0">
+                                        <Button
+                                            Width="60"
+                                            Height="22"
+                                            Command="{Binding ResetMouthCommand}"
+                                            Content="초기화"
+                                            DockPanel.Dock="Right"
+                                            FontSize="11"
+                                            Style="{StaticResource SecondaryButtonStyle}" />
+                                        <TextBlock
+                                            Margin="0"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource SectionLabel}"
+                                            Text="환자 입안" />
+                                    </DockPanel>
+                                    <ItemsControl
+                                        Margin="0,4,0,0"
+                                        ItemsSource="{Binding MouthSlots}"
+                                        Style="{StaticResource SlotList}" />
+                                    <TextBlock Style="{StaticResource HintText}" Text="입안 클로즈업을 만든다. 치과의사·위생사와 카메라의 시점·앵글·샷 크기·머리 방향은 숨겨진다(손은 '손·기구'에서 고른다). 코~턱처럼 눈이 화면 밖인 범위는 환자 외모 문장도 뺀다." />
+                                </StackPanel>
 
                                 <TextBlock Style="{StaticResource SectionLabel}" Text="장면 프리셋" />
                                 <ComboBox
@@ -329,7 +369,7 @@
                                 </Grid>
 
                                 <!--  등장인물: 고른 값은 settings.json 에 저장돼 다음 실행에도 같은 주인공으로 시작한다  -->
-                                <DockPanel Margin="0,14,0,0">
+                                <DockPanel Margin="0,14,0,0" Visibility="{Binding IsSceneMode, Converter={StaticResource BoolToVis}}">
                                     <Button
                                         Width="60"
                                         Height="22"
@@ -353,12 +393,13 @@
                                         ToolTip="기본값: 20대 후반 여성, 낮은 포니테일, 흰 가운 + 네이비 스크럽, 마스크 착용" />
                                 </DockPanel>
                                 <ItemsControl
+                                    Visibility="{Binding IsSceneMode, Converter={StaticResource BoolToVis}}"
                                     Margin="0,4,0,0"
                                     IsEnabled="{Binding IncludeDentist}"
                                     ItemsSource="{Binding DentistSlots}"
                                     Style="{StaticResource SlotList}" />
 
-                                <DockPanel Margin="0,14,0,0">
+                                <DockPanel Margin="0,14,0,0" Visibility="{Binding IsSceneMode, Converter={StaticResource BoolToVis}}">
                                     <Button
                                         Width="60"
                                         Height="22"
@@ -382,6 +423,7 @@
                                         ToolTip="위생사가 나오는 장면에서만 켠다" />
                                 </DockPanel>
                                 <ItemsControl
+                                    Visibility="{Binding IsSceneMode, Converter={StaticResource BoolToVis}}"
                                     Margin="0,4,0,0"
                                     IsEnabled="{Binding IncludeHygienist}"
                                     ItemsSource="{Binding HygienistSlots}"
@@ -533,28 +575,6 @@
                                 <ItemsControl
                                     Margin="0,4,0,0"
                                     ItemsSource="{Binding TreatmentSlots}"
-                                    Style="{StaticResource SlotList}" />
-
-                                <!--  환자 입안: 화면에 어디까지(치아만 ~ 얼굴 전체), 보는 방향, 입 벌림, 손·기구  -->
-                                <DockPanel Margin="0,14,0,0" Visibility="{Binding ShowMouthSection, Converter={StaticResource BoolToVis}}">
-                                    <Button
-                                        Width="60"
-                                        Height="22"
-                                        Command="{Binding ResetMouthCommand}"
-                                        Content="초기화"
-                                        DockPanel.Dock="Right"
-                                        FontSize="11"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
-                                    <TextBlock
-                                        Margin="0"
-                                        VerticalAlignment="Center"
-                                        Style="{StaticResource SectionLabel}"
-                                        Text="환자 입안"
-                                        ToolTip="입안 범위를 고르면 카메라의 '샷 크기'는 숨겨진다. 코~턱처럼 눈이 화면 밖인 범위는 의료진·환자 외모 문장을 뺀다." />
-                                </DockPanel>
-                                <ItemsControl
-                                    Margin="0,4,0,0"
-                                    ItemsSource="{Binding MouthSlots}"
                                     Style="{StaticResource SlotList}" />
 
                                 <!--  카메라 구도: 각도·방향은 숫자를 넣은 별도 문장으로 붙는다  -->
