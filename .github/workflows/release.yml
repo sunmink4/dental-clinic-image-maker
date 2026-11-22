@@ -1,7 +1,10 @@
 name: Release
 
-# v0.1.0 같은 태그를 푸시하면 exe 를 만들어 GitHub 릴리스에 올린다.
-# sunmink4.github.io 의 다운로드 버튼이 파일 이름 끝(-win-x64.exe 등)으로 찾으니 이름 규칙을 바꾸지 말 것.
+# v0.1.0 같은 태그를 푸시하면 GitHub 릴리스에 아래를 올린다.
+#  - DentalImageMaker-win-Setup.exe : 설치판(Velopack). 시작 메뉴·바탕화면 바로가기, 켤 때 새 버전 확인·업데이트.
+#  - DentalImageMaker-<태그>-win-x64.exe : 설치 없이 실행되는 단일 exe(.NET 포함)
+#  - DentalImageMaker-<태그>-win-x64-framework-dependent.exe : .NET 8 데스크톱 런타임이 있는 PC용(용량이 작음)
+# sunmink4.github.io 의 다운로드 버튼이 파일 이름 끝(-win-x64.exe 등)으로 찾으니 단일 exe 이름 규칙을 바꾸지 말 것.
 
 on:
   push:
@@ -17,54 +20,87 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 릴리스 본문에 지난 태그 이후 커밋을 적으려면 태그·기록이 다 있어야 한다
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 자체 포함(self-contained): .NET 설치 없이 실행되는 단일 exe
+      - name: Get version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart('v')
+          $parts = $v.Split('.')
+          while ($parts.Count -lt 3) { $parts += '0' }
+          "version=$($parts -join '.')" >> $env:GITHUB_OUTPUT
+
+      # ---------- 설치판 (Velopack) ----------
+      # 단일 파일이 아닌 폴더로 낸다(vpk 가 폴더를 통째로 묶는다). .NET 을 품어야 런타임 없는 PC 에서도 설치 훅이 뜬다.
+      - name: Publish for installer
+        run: >
+          dotnet publish DentalImageMaker/DentalImageMaker.csproj
+          -c Release -r win-x64 --self-contained true -o publish-vpk
+          -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Install vpk
+        # 앱의 Velopack 패키지와 같은 판으로 맞춘다.
+        run: dotnet tool install -g vpk --version 0.0.1298
+
+      - name: Download previous release for delta updates
+        run: vpk download github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }} --outputDir releases
+        continue-on-error: true
+
+      - name: Pack with Velopack
+        # --mainExe 가 있어야 Setup.exe 가 만들어진다. 그 exe 의 Main 맨 앞에서 VelopackApp.Build().Run() 을 부른다(Starter.cs).
+        run: >
+          vpk pack --packId DentalImageMaker --packTitle "치과 이미지 메이커" --packAuthors "sunmink4"
+          --packVersion ${{ steps.version.outputs.version }} --packDir publish-vpk
+          --mainExe DentalImageMaker.exe --icon DentalImageMaker/app.ico --outputDir releases
+
+      - name: Upload installer to GitHub Releases
+        # --publish: 초안이 아닌 정식 릴리스로. --merge: 이미 있는 같은 태그 릴리스에 합친다.
+        run: >
+          vpk upload github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }}
+          --tag ${{ github.ref_name }} --releaseName "${{ github.ref_name }}" --outputDir releases --publish --merge
+
+      # ---------- 설치 없이 쓰는 단일 exe ----------
+      # releases 폴더 밖에 짓는다(vpk upload 가 releases 를 통째로 올리므로).
       - name: Publish self-contained executable
         run: >
           dotnet publish DentalImageMaker/DentalImageMaker.csproj
-          -c Release
-          -r win-x64
-          --self-contained true
-          -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:Version=${{ steps.version.outputs.version }}
           -o publish
 
-      # 프레임워크 종속(framework-dependent): .NET 8 데스크톱 런타임이 있는 PC용(용량이 작음)
       - name: Publish framework-dependent executable
         run: >
           dotnet publish DentalImageMaker/DentalImageMaker.csproj
-          -c Release
-          -r win-x64
-          --self-contained false
-          -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
+          -c Release -r win-x64 --self-contained false
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:Version=${{ steps.version.outputs.version }}
           -o publish-fd
 
-      - name: Package
-        shell: pwsh
-        run: |
-          $version = "${{ github.ref_name }}"
-          Copy-Item "publish\DentalImageMaker.exe" "DentalImageMaker-$version-win-x64.exe"
-          Copy-Item "publish-fd\DentalImageMaker.exe" "DentalImageMaker-$version-win-x64-framework-dependent.exe"
-
-      - name: Create or update GitHub release
+      - name: Upload single-file executables and notes
         shell: pwsh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $tag = "${{ github.ref_name }}"
-          $assets = @(
-            "DentalImageMaker-$tag-win-x64.exe",
-            "DentalImageMaker-$tag-win-x64-framework-dependent.exe"
-          )
-          gh release view $tag *> $null
-          if ($LASTEXITCODE -eq 0) {
-            gh release upload $tag $assets --clobber
-          } else {
-            gh release create $tag $assets --title $tag --generate-notes
-          }
+          Copy-Item "publish\DentalImageMaker.exe" "DentalImageMaker-$tag-win-x64.exe"
+          Copy-Item "publish-fd\DentalImageMaker.exe" "DentalImageMaker-$tag-win-x64-framework-dependent.exe"
+          gh release upload $tag "DentalImageMaker-$tag-win-x64.exe" "DentalImageMaker-$tag-win-x64-framework-dependent.exe" --clobber
+          # 본문: 설치 안내 + 지난 태그 이후 커밋 제목
+          $prev = git tag --sort=-v:refname | Where-Object { $_ -ne $tag } | Select-Object -First 1
+          $log = if ($prev) { git log --pretty="- %s" "$prev..$tag" } else { git log --pretty="- %s" -20 }
+          $body = @(
+            "**설치판**: ``DentalImageMaker-win-Setup.exe`` — 설치하면 바로가기가 생기고, 켤 때 새 버전을 알려 줍니다.",
+            "**설치 없이**: ``DentalImageMaker-$tag-win-x64.exe`` 하나만 받아 실행.",
+            "",
+            "### 바뀐 점"
+          ) + $log
+          Set-Content -Encoding UTF8 notes.md -Value ($body -join "`n")
+          gh release edit $tag --notes-file notes.md

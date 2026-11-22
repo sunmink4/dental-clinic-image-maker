@@ -55,6 +55,8 @@ public partial class MainWindowViewModel : ObservableObject
                     return;
                 if (slot == _situation)
                     ApplySituation();
+                if (slot == _mouthFrame)
+                    ApplyMouthFrame();
                 if (slot == _dentistGender || slot == _hygienistGender)
                     SyncHairOptions();
                 if (CharacterSlots.Contains(slot))
@@ -185,10 +187,12 @@ public partial class MainWindowViewModel : ObservableObject
     private void ApplySituation()
     {
         var hidden = PromptLibrary.SituationHiddenSlots.GetValueOrDefault(_situation.Selected.Key) ?? [];
-        foreach (var slot in DentistSlots.Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots))
+        foreach (var slot in DentistSlots.Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots).Concat(MouthSlots))
             slot.IsVisible = !hidden.Contains(slot.Id);
         ShowToothChart = !hidden.Contains(PromptLibrary.ToothChartId);
         OnPropertyChanged(nameof(ShowTreatmentSection));
+        OnPropertyChanged(nameof(ShowMouthSection));
+        ApplyMouthFrame();
     }
 
     /// <summary>무슨 치료를 어느 치아에 하는지. 입안 장면은 이게 구체적이어야 잘 나온다.</summary>
@@ -201,9 +205,40 @@ public partial class MainWindowViewModel : ObservableObject
         new("room.recline", "체어 등받이 각도", PromptLibrary.ChairRecline) { Group = "진료실" },
     ];
 
+    // ---------- 환자 입안 ----------
+
+    private readonly OptionSlot _mouthFrame = new("mouth.frame", "입안 범위 (화면에 어디까지)", PromptLibrary.MouthFrames) { Group = "환자 입안" };
+    private IReadOnlyList<OptionSlot>? _mouthSlots;
+
+    /// <summary>입안을 크게 보여 주는 장면의 범위·방향·벌림·손. 범위를 고르면 카메라의 '샷 크기'는 숨긴다(겹치므로).</summary>
+    public IReadOnlyList<OptionSlot> MouthSlots => _mouthSlots ??=
+    [
+        _mouthFrame,
+        new("mouth.view", "보는 방향", PromptLibrary.MouthViews) { Group = "환자 입안" },
+        new("mouth.open", "입 벌림", PromptLibrary.MouthOpenings) { Group = "환자 입안" },
+        new("mouth.hands", "손·기구", PromptLibrary.MouthHands) { Group = "환자 입안" },
+    ];
+
+    public bool ShowMouthSection => MouthSlots.Any(s => s.IsVisible);
+
+    private bool MouthFrameActive => _mouthFrame.IsVisible && _mouthFrame.IsSet;
+
+    /// <summary>입안 범위를 고르면 겹치는 '샷 크기' 칸을 숨긴다.</summary>
+    private void ApplyMouthFrame()
+    {
+        CameraSlots.First(s => s.Id == "camera.shot").IsVisible = !MouthFrameActive;
+    }
+
+    [RelayCommand]
+    private void ResetMouth()
+    {
+        foreach (var slot in MouthSlots)
+            slot.Selected = slot.Options[0];
+    }
+
     /// <summary>settings.json 에 저장하는 칸(인물·진료). 카메라 구도는 매번 고른다.</summary>
     private IEnumerable<OptionSlot> CharacterSlots =>
-        SituationSlots.Concat(DentistSlots).Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots);
+        SituationSlots.Concat(DentistSlots).Concat(HygienistSlots).Concat(PatientSlots).Concat(TreatmentSlots).Concat(MouthSlots);
 
     private IEnumerable<OptionSlot> AllSlots => CameraSlots.Concat(CharacterSlots);
 
@@ -400,7 +435,8 @@ public partial class MainWindowViewModel : ObservableObject
     {
         // 상황·진료 내용·구강 상태를 먼저 둬야 모델이 '무엇을 그리는지'를 놓치지 않는다.
         // 숨긴 칸(지금 상황에 맞지 않는 칸)은 고른 값이 남아 있어도 넣지 않는다.
-        foreach (var slot in SituationSlots.Concat(TreatmentSlots).Where(s => s.IsVisible))
+        // 입안 범위는 상황 바로 뒤에 둔다: 화면에 어디까지 들어오는지가 가장 먼저 정해져야 한다.
+        foreach (var slot in SituationSlots.Concat(MouthSlots).Concat(TreatmentSlots).Where(s => s.IsVisible))
             yield return slot.PromptText;
         if (IncludePatient)
         {
@@ -442,7 +478,8 @@ public partial class MainWindowViewModel : ObservableObject
             }
         }
 
-        foreach (var slot in CameraSlots.Where(s => !s.VideoOnly || IsVideoKind))
+        // 영상 전용 칸은 영상일 때만, 샷 크기는 입안 범위를 안 골랐을 때만 보인다.
+        foreach (var slot in CameraSlots.Where(s => s.IsVisible))
             yield return slot.PromptText;
     }
 
@@ -453,7 +490,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>입안 클로즈업 장면인지: 샷 크기가 ECU 이거나 장면 프리셋이 구강 내부/입안 장면.</summary>
     private bool IsIntraoral =>
-        CameraSlots.Any(s => s.Selected.Key == "shot.ecu")
+        (MouthFrameActive && PromptLibrary.MouthCloseFrames.Contains(_mouthFrame.Selected.Key))
+        || CameraSlots.Any(s => s.IsVisible && s.Selected.Key == "shot.ecu")
         || SelectedScene?.Name.Contains("구강 내부", StringComparison.Ordinal) == true
         || SelectedScene?.Name.Contains("입안", StringComparison.Ordinal) == true;
 
@@ -825,7 +863,7 @@ public partial class MainWindowViewModel : ObservableObject
             Kind = Kind,
             NewChat = !ContinueChat,
             References = References.ToList(),
-            ExampleKeys = CameraSlots.Concat(SituationSlots).Concat(TreatmentSlots.Where(s => !s.Id.StartsWith("room.", StringComparison.Ordinal)))
+            ExampleKeys = CameraSlots.Concat(SituationSlots).Concat(MouthSlots).Concat(TreatmentSlots.Where(s => !s.Id.StartsWith("room.", StringComparison.Ordinal)))
                 .Where(s => s.IsVisible && s.IsSet)
                 .Select(s => s.Selected.Key)
                 .Where(k => !string.IsNullOrEmpty(k))

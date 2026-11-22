@@ -293,7 +293,8 @@ public static class PromptLibrary
 
     // 상황마다 그 장면에 없는(또는 상황 문장과 부딪치는) 칸. 화면에서 숨기고 프롬프트에서도 뺀다.
     // 고른 값은 지우지 않으므로 '진료 중'으로 돌아오면 그대로 되살아난다.
-    private static readonly string[] Oral = ["treatment.kind", "treatment.tooth", "treatment.detail", "patient.teeth", ToothChartId];
+    private static readonly string[] Mouth = ["mouth.frame", "mouth.view", "mouth.open", "mouth.hands"];
+    private static readonly string[] Oral = ["treatment.kind", "treatment.tooth", "treatment.detail", "patient.teeth", ToothChartId, .. Mouth];
     private static readonly string[] OutOfChair = [.. Oral, "room.chair", "room.recline", "patient.cover", "patient.state"];
 
     public static IReadOnlyDictionary<string, string[]> SituationHiddenSlots { get; } = new Dictionary<string, string[]>
@@ -307,7 +308,7 @@ public static class PromptLibrary
         ["situ.anesthesia"] = ["treatment.kind"],
         ["situ.intraoral_cam"] = ["treatment.kind", "treatment.detail"],
         ["situ.impression"] = ["treatment.kind", "treatment.tooth", "treatment.detail"],
-        ["situ.mirror_check"] = ["treatment.kind", "treatment.tooth", "treatment.detail", "room.recline", "patient.state"],
+        ["situ.mirror_check"] = ["treatment.kind", "treatment.tooth", "treatment.detail", "room.recline", "patient.state", .. Mouth],
         ["situ.brushing_edu"] = [.. Oral, "room.recline", "patient.state"],
         ["situ.child_calm"] = [.. Oral, "patient.gender", "patient.state"],
         ["situ.finish"] = [.. Oral, "room.recline", "patient.state"],
@@ -349,6 +350,55 @@ public static class PromptLibrary
         new("oral.retractor", "개구기 (입술 벌림)", "A clear plastic cheek retractor holds the lips wide open."),
         new("oral.mirror_reflection", "미러에 비친 치아", "The treated tooth is clearly visible as a reflection in the round dental mirror."),
         new("oral.light", "강한 진료 조명", "Bright focused dental operating light illuminates the inside of the mouth; moist tissues and enamel glisten realistically."),
+    ];
+
+    // ---------- 환자 입안 ----------
+    // 입안을 크게 보여 주는 장면의 구도. 화면에 어디까지 들어오는지(치아만 ~ 얼굴 전체)를 '위·아래 경계'로 적어야 지켜진다.
+
+    /// <summary>얼굴 위쪽이 화면 밖인 범위. 이걸 고르면 입안 장면으로 보고 의료진·환자 외모 문장을 뺀다.</summary>
+    public static IReadOnlySet<string> MouthCloseFrames { get; } =
+        new HashSet<string> { "mframe.teeth", "mframe.lips", "mframe.nose_mouth", "mframe.nose_chin", "mframe.below_eyes" };
+
+    public static IReadOnlyList<PromptOption> MouthFrames { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("mframe.teeth", "치아만 꽉 차게", "Framing: macro close-up inside the open mouth — the teeth, gums and tongue fill the whole frame; only the inner edges of the lips show at the borders; no nose, no chin, no face."),
+        new("mframe.lips", "입술까지 (입만)", "Framing: extreme close-up cropped tightly on the mouth only — the frame shows just the wide-open lips and teeth with a thin margin of skin around the lips; the nose, the eyes and the chin are completely outside the frame and not visible."),
+        new("mframe.nose_mouth", "코~입 (턱 잘림)", "Framing: tight close-up crop — the top edge of the frame cuts through the tip of the nose and the nostrils, the bottom edge cuts just below the lower lip so the chin is cut off; the eyes and the forehead are not visible at all."),
+        new("mframe.nose_chin", "코끝~턱", "Framing: close-up crop of the lower half of the face only — the top edge of the frame is at the nose, the bottom edge at the chin; the wide-open mouth is in the center; the eyes and the forehead are completely outside the frame and not visible."),
+        new("mframe.below_eyes", "눈 아래~턱", "Framing: close-up crop of the lower face — the top edge of the frame cuts just under the eyes so the eyes are not visible; cheeks, nose, the wide-open mouth, the whole jaw and a bit of the neck are visible."),
+        new("mframe.face", "얼굴 전체", "Framing: the patient's whole face from the forehead to the chin fills the frame, the wide-open mouth in the lower center; hair at the sides."),
+        new("mframe.face_shoulder", "얼굴~어깨", "Framing: the patient's head and shoulders, the face with the wide-open mouth clearly visible; the top of the chest at the bottom edge."),
+    ];
+
+    public static IReadOnlyList<PromptOption> MouthViews { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("mview.front", "정면 (입과 마주 봄)", "Mouth view: straight-on frontal view looking directly into the open mouth, the face symmetrical in the frame."),
+        new("mview.oblique", "사선 (비스듬히 옆에서)", "Mouth view: oblique three-quarter view from the patient's right side, about 45 degrees, so the mouth opening is seen at an angle and the molars on one side are visible."),
+        new("mview.dentist_above", "위에서 (의사 자리)", "Mouth view: from above, from the dentist's seat at the patient's right side, looking down into the open mouth of the reclined patient."),
+        new("mview.head_12", "머리 쪽 12시 (얼굴 거꾸로)", "Mouth view: from behind the patient's head at the 12 o'clock position, looking down over the forehead into the mouth, so the face appears upside down with the chin at the top of the frame and the upper teeth closest to the camera."),
+        new("mview.side", "측면 90°", "Mouth view: pure side profile at 90 degrees, showing the open mouth, lips and jaw line from the side."),
+        new("mview.below", "아래에서 (턱 밑)", "Mouth view: low angle from below the chin, looking up toward the upper teeth and palate."),
+    ];
+
+    public static IReadOnlyList<PromptOption> MouthOpenings { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("mopen.slight", "살짝 벌림", "Mouth opening: the lips are only slightly parted, a gap of about one centimeter with the front teeth just visible — the mouth is NOT opened wide."),
+        new("mopen.medium", "보통", "Mouth opening: the mouth is open normally, upper and lower teeth visible with a gap of about two fingers."),
+        new("mopen.wide", "크게", "Mouth opening: the mouth is opened wide, the tongue and the lower molars clearly visible."),
+        new("mopen.max", "최대한 (목젖까지)", "Mouth opening: the mouth is opened as wide as physically possible — the jaw fully dropped, the tongue, the back molars and the uvula at the back of the throat are visible."),
+    ];
+
+    public static IReadOnlyList<PromptOption> MouthHands { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("mhand.none", "손·기구 없음", "No hands and no instruments in the frame — only the patient's open mouth."),
+        new("mhand.mirror", "미러 한 손", "One gloved hand enters from the side of the frame holding a round dental mirror inside the mouth, the teeth reflected in it."),
+        new("mhand.mirror_explorer", "미러 + 탐침 (양손)", "Two gloved hands enter from both sides of the frame: one holds a round dental mirror inside the mouth, the other a thin explorer probe touching a molar."),
+        new("mhand.handpiece", "핸드피스 + 미러", "Two gloved hands: one holds a high-speed handpiece with a bur fitted, its tip on a molar, the other holds a dental mirror."),
+        new("mhand.big_foreground", "크게 보이는 의사 손 (위에서)", "The dentist's large white-gloved hands dominate the foreground, seen from above over the patient, holding a mirror and an explorer in the mouth; the dentist's dark scrubs show at the frame edge."),
     ];
 
     // ---------- 진료실 ----------

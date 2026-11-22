@@ -535,6 +535,28 @@
                                     ItemsSource="{Binding TreatmentSlots}"
                                     Style="{StaticResource SlotList}" />
 
+                                <!--  환자 입안: 화면에 어디까지(치아만 ~ 얼굴 전체), 보는 방향, 입 벌림, 손·기구  -->
+                                <DockPanel Margin="0,14,0,0" Visibility="{Binding ShowMouthSection, Converter={StaticResource BoolToVis}}">
+                                    <Button
+                                        Width="60"
+                                        Height="22"
+                                        Command="{Binding ResetMouthCommand}"
+                                        Content="초기화"
+                                        DockPanel.Dock="Right"
+                                        FontSize="11"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                    <TextBlock
+                                        Margin="0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource SectionLabel}"
+                                        Text="환자 입안"
+                                        ToolTip="입안 범위를 고르면 카메라의 '샷 크기'는 숨겨진다. 코~턱처럼 눈이 화면 밖인 범위는 의료진·환자 외모 문장을 뺀다." />
+                                </DockPanel>
+                                <ItemsControl
+                                    Margin="0,4,0,0"
+                                    ItemsSource="{Binding MouthSlots}"
+                                    Style="{StaticResource SlotList}" />
+
                                 <!--  카메라 구도: 각도·방향은 숫자를 넣은 별도 문장으로 붙는다  -->
                                 <DockPanel Margin="0,14,0,0">
                                     <Button

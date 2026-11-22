@@ -23,6 +23,7 @@ public class App : Application
         AppServices.Current = _host.Services;
 
         _host.Services.GetRequiredService<MainWindow>().Show();
+        _ = Updater.CheckAsync();
     }
 
     protected override void OnExit(ExitEventArgs e)
