@@ -7,7 +7,8 @@ public static class PromptBuilder
 {
     /// <summary>
     /// 이미지: "Generate an image. [비율] [화풍] [장면 앞] [입력] [장면 뒤] [주인공] [카메라] [규칙]"
-    /// 영상·이어서 보내기(수정 요청)는 머리말 없이 입력 위주로 만든다.
+    /// 영상·이어서 보내기(수정 요청)는 머리말 없이 입력 위주로 만든다. 이어서 보내기라도 화풍을 골랐으면
+    /// "이 화풍으로 다시 그려" 를 앞에 붙인다 — 예전에는 빼서, 이어서 보내기를 켠 채 화풍을 바꾸면 반영되지 않았다.
     /// "Generate an image." 를 붙이면 Gemini·ChatGPT 둘 다 글 대신 그림으로 답한다.
     /// </summary>
     public static string Build(
@@ -30,6 +31,10 @@ public static class PromptBuilder
                 parts.Add("동영상을 만들어줘.");
             Add(parts, aspect?.Text);
             Add(parts, style?.Before);
+        }
+        else if (!string.IsNullOrWhiteSpace(style?.Before))
+        {
+            Add(parts, "Redraw the image in this art style: " + style.Before);
         }
 
         var body = new StringBuilder();

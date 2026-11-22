@@ -43,6 +43,12 @@ public sealed class AppSettings
     /// <summary>'내용' 칸에서 규칙으로 추가한 사용자 규칙. 기본 규칙 뒤에 붙는다.</summary>
     public List<CustomRule> CustomRules { get; set; } = [];
 
+    /// <summary>마지막으로 고른 화풍 이름. 다음 실행에도 같은 화풍으로 시작한다.</summary>
+    public string StyleName { get; set; } = "";
+
+    /// <summary>손으로 적어 '이어서 보내기'로 보낸 수정 요청. 새것이 앞, 칩으로 다시 쓴다.</summary>
+    public List<string> EditRequests { get; set; } = [];
+
     /// <summary>대기열이 연속으로 이만큼 실패하면 한도에 걸린 것으로 보고 멈춘다.</summary>
     public int MaxConsecutiveFailures { get; set; } = 3;
 

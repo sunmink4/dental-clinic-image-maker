@@ -60,12 +60,16 @@ public partial class MainWindowViewModel : ObservableObject
                     SyncHairOptions();
                 if (CharacterSlots.Contains(slot))
                     SaveCharacter();
+                if (slot == _patientGender)
+                    OnPropertyChanged(nameof(ReferenceLabel));
                 OnPropertyChanged(nameof(FinalPrompt));
             };
 
-        _selectedStyle = Styles[0];
-        _selectedScene = Scenes[0];
+        _selectedStyle = Styles.FirstOrDefault(s => s.Name == settings.StyleName) ?? Styles[0];
         _selectedAspect = AspectRatios[0];
+        EditRequests = new(settings.EditRequests.Where(r => !string.IsNullOrWhiteSpace(r)));
+        // 첨부를 넣고 빼면 '첨부는 참고만, 화풍대로' 문장이 붙고 빠진다.
+        References.CollectionChanged += (_, _) => OnPropertyChanged(nameof(FinalPrompt));
         _provider = settings.LastProvider;
         _outputFolder = settings.OutputFolder;
     }
@@ -73,9 +77,9 @@ public partial class MainWindowViewModel : ObservableObject
     // ---------- 선택지 ----------
 
     public IReadOnlyList<PromptPreset> Styles => PromptLibrary.Styles;
-    public IReadOnlyList<PromptPreset> Scenes => PromptLibrary.Scenes;
     public IReadOnlyList<AspectRatio> AspectRatios => PromptLibrary.AspectRatios;
-    public IReadOnlyList<string> EditChips => PromptLibrary.EditChips;
+    /// <summary>손으로 적어 보낸 수정 요청(새것이 앞). 누르면 내용에 붙는다.</summary>
+    public ObservableCollection<string> EditRequests { get; }
     public ObservableCollection<RuleOption> Rules { get; }
 
     public ObservableCollection<string> References { get; } = [];
@@ -95,10 +99,6 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FinalPrompt))]
     private PromptPreset _selectedStyle;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FinalPrompt), nameof(SceneHint))]
-    private PromptPreset _selectedScene;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FinalPrompt))]
@@ -184,7 +184,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>만들 장면. false = 치과 상황(진료실 장면), true = 환자 입안(입안 클로즈업).</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsSceneMode), nameof(FinalPrompt))]
+    [NotifyPropertyChangedFor(nameof(IsSceneMode), nameof(FinalPrompt), nameof(ReferenceLabel))]
     private bool _isMouthMode;
 
     public bool IsSceneMode
@@ -199,8 +199,8 @@ public partial class MainWindowViewModel : ObservableObject
         SaveCharacter();
     }
 
-    /// <summary>환자 입안 모드에서 숨기는 카메라 칸: 입안의 '보는 방향 · 범위'와 겹친다.</summary>
-    private static readonly string[] MouthModeHiddenCamera = ["camera.view", "camera.angle", "camera.shot", "camera.head"];
+    /// <summary>환자 입안 모드에서 숨기는 카메라 칸: 입안의 '보는 방향 · 범위'와 겹친다. 환자 머리 방향은 입안에서도 고른다(요청).</summary>
+    private static readonly string[] MouthModeHiddenCamera = ["camera.view", "camera.angle", "camera.shot"];
 
     /// <summary>
     /// 지금 모드와 치과 상황에 맞지 않는 칸을 숨긴다(숨긴 칸은 프롬프트에서도 빠진다). 고른 값은 남겨 둔다.
@@ -511,17 +511,14 @@ public partial class MainWindowViewModel : ObservableObject
             yield return slot.PromptText;
     }
 
-    /// <summary>의료진 얼굴이 화면 밖인 구도인지: 시점이 '의사 뒤 위에서'이거나 그런 장면 프리셋.</summary>
+    /// <summary>의료진 얼굴이 화면 밖인 구도인지: 시점이 '의사 뒤 위에서'.</summary>
     private bool StaffFacesHidden =>
-        CameraSlots.Any(s => s.Selected.Key == PromptLibrary.FacelessViewKey)
-        || SelectedScene?.StaffFacesHidden == true;
+        CameraSlots.Any(s => s.Selected.Key == PromptLibrary.FacelessViewKey);
 
-    /// <summary>입안 클로즈업 장면인지: 샷 크기가 ECU 이거나 장면 프리셋이 구강 내부/입안 장면.</summary>
+    /// <summary>입안 클로즈업 장면인지: 입안 범위가 클로즈업이거나 샷 크기가 ECU.</summary>
     private bool IsIntraoral =>
         (MouthFrameActive && PromptLibrary.MouthCloseFrames.Contains(_mouthFrame.Selected.Key))
-        || CameraSlots.Any(s => s.IsVisible && s.Selected.Key == "shot.ecu")
-        || SelectedScene?.Name.Contains("구강 내부", StringComparison.Ordinal) == true
-        || SelectedScene?.Name.Contains("입안", StringComparison.Ordinal) == true;
+        || CameraSlots.Any(s => s.IsVisible && s.Selected.Key == "shot.ecu");
 
     partial void OnIsVideoKindChanged(bool value)
     {
@@ -567,14 +564,53 @@ public partial class MainWindowViewModel : ObservableObject
 
     public bool CanUseVideo => Provider == AiProvider.Gemini;
 
-    public string SceneHint => SelectedScene.Hint;
+    /// <summary>첨부 칸 머리글 — 환자 입안이거나 환자를 '첨부 이미지의 환자'로 골랐으면 첨부가 곧 환자 사진이다.</summary>
+    public string ReferenceLabel =>
+        IsMouthMode || _patientGender.Selected.Key == PromptLibrary.PatientFromReferenceKey ? "환자 이미지 (첨부)" : "참고 이미지 (첨부)";
 
     private GenerationKind Kind => IsVideoKind ? GenerationKind.Video : GenerationKind.Image;
 
+    /// <summary>
+    /// 사진을 첨부하고 그림 화풍(웹툰 등)을 고르면 모델이 사진의 실사 느낌을 그대로 따라 그린다 — 첨부는 인물 · 구도 참고일 뿐이라고 못 박는다.
+    /// </summary>
+    private string? ReferenceStyleSentence =>
+        References.Count > 0 && !string.IsNullOrWhiteSpace(SelectedStyle?.Before) && SelectedStyle.Before != PromptLibrary.PhotoStyle
+            ? "Use the attached image only as a reference for the person's identity and the composition; draw the final image entirely in the art style described above, not as a photograph."
+            : null;
+
     public string FinalPrompt => PromptBuilder.Build(
-        Kind, ContinueChat, SelectedStyle, SelectedScene, SelectedAspect,
+        Kind, ContinueChat, SelectedStyle, null, SelectedAspect,
         Rules.Where(r => r.IsOn && !(r.Rule.TreatmentOnly && IsNonTreatmentSituation)).Select(r => r.Rule),
-        FreeText, OptionSentences());
+        FreeText, OptionSentences().Append(ReferenceStyleSentence));
+
+    partial void OnSelectedStyleChanged(PromptPreset value)
+    {
+        _settings.StyleName = value?.Name ?? "";
+        _settings.Save();
+    }
+
+    /// <summary>손으로 적어 '이어서 보내기'로 보낸 수정 요청을 칩으로 등록한다(같은 글은 앞으로 옮긴다, 30개까지).</summary>
+    private void RegisterEditRequest(string text)
+    {
+        text = text.Trim();
+        if (text.Length == 0)
+            return;
+        EditRequests.Remove(text);
+        EditRequests.Insert(0, text);
+        while (EditRequests.Count > 30)
+            EditRequests.RemoveAt(EditRequests.Count - 1);
+        _settings.EditRequests = EditRequests.ToList();
+        _settings.Save();
+    }
+
+    [RelayCommand]
+    private void RemoveEditRequest(string text)
+    {
+        if (!EditRequests.Remove(text))
+            return;
+        _settings.EditRequests = EditRequests.ToList();
+        _settings.Save();
+    }
 
     /// <summary>MainWindow 가 화면 전환(브라우저 보이기)을 처리하도록 알린다.</summary>
     public event Action<AiProvider>? ProviderShown;
@@ -880,6 +916,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     private QueueItem CreateQueueItem()
     {
+        if (ContinueChat)
+            RegisterEditRequest(FreeText);
         var name = string.IsNullOrWhiteSpace(OutputName)
             ? $"{(IsVideoKind ? "video" : "image")}_{DateTime.Now:HHmmss}"
             : OutputName.Trim();

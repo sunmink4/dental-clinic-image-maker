@@ -573,7 +573,7 @@ public static class PromptLibrary
 
     public static IReadOnlyList<PromptPreset> Styles { get; } =
     [
-        new("없음 (장면 프리셋에 포함)", ""),
+        new("없음", ""),
         new("한국 웹툰 (게임 에셋)", WebtoonStyle),
         new("웹툰: 로맨스 (화사한 미형)", RomanceWebtoonStyle),
         new("웹툰: 일상 · 개그", GagWebtoonStyle),
@@ -584,170 +584,6 @@ public static class PromptLibrary
         new("웹툰: 흑백 펜선 + 스크린톤", MonochromeWebtoonStyle),
         new("실사 다큐 사진", PhotoStyle),
         new("디지털 페인팅 (웹툰 캐릭터)", PaintingStyle),
-    ];
-
-    // ---------- 장면 ----------
-
-    private const string Cut =
-        "Single isolated subject centered, full subject visible with margin around it, on a flat solid magenta #FF00FF background with no shadow on the background.";
-
-    private const string Room =
-        "Wide horizontal 3:2 interior of a single dental treatment room seen from above at a top-down 3/4 view. The whole floor is a large empty open space " +
-        "with no furniture, no chairs, no dividing walls and no partitions, so game objects can be placed on it. Details only along the top wall: cabinets, a sink and windows. " +
-        "Typical Korean clinic interior: bright white rectangular LED ceiling panels, white walls, light wood-look vinyl tile floor, all signs blank. " +
-        "The accent wall panels and trim are painted in flat pure cobalt blue #0047FF, and nothing else in the room is blue; any sky through windows is pale and hazy. " +
-        "After hours: completely deserted, absolutely no people, no human figures anywhere.";
-
-    private const string Lounge =
-        "Very wide horizontal banner interior of a dental clinic waiting room seen straight on from the front, low camera. A long fabric waiting sofa fills the center and right, " +
-        "a reception counter stands at the far left, nothing in the foreground. Typical Korean clinic interior: bright white rectangular LED ceiling panels, white walls, " +
-        "light wood-look vinyl tile floor, all signs blank. The accent wall panels and trim are painted in flat pure cobalt blue #0047FF, and nothing else in the room is blue. " +
-        "After hours: completely deserted, absolutely no people, no human figures anywhere.";
-
-    public static IReadOnlyList<PromptPreset> Scenes { get; } =
-    [
-        new("자유 입력", "", "", "입력한 내용만 보낸다."),
-
-        // --- 게임 에셋 (gemini_batch.js) ---
-        new("에셋: 단독 피사체 (마젠타 배경)", "", Cut, "인물 초상·장비·체어. 배경은 나중에 지운다."),
-        new("에셋: 빈 진료실 배경", Room, "", "뒤에 공간 설명(예: 상가 2층 작은 치과)을 쓴다."),
-        new("에셋: 빈 대기실 배너", Lounge),
-        new("에셋: 게임 아이콘", "", "Game icon, bold simple silhouette readable at small size. " + Cut),
-        new("에셋: 작은 UI 아이콘", "", "Tiny game UI icon, extremely simple, readable at 48 pixels. " + Cut),
-        new("에셋: 스토리 컷", "A single full-bleed story scene. ", "", "주인공은 뒷모습·손·먼 거리로만."),
-        new("편집: 첨부 이미지에서 X만 바꾸기",
-            "Edit the attached image. Keep everything exactly the same: the composition, every person, the art style and the background. Only ", "",
-            "예: replace the patient lying in the chair with an elderly Korean grandmother."),
-
-        // --- 실사 (C1~C8) ---
-        new("실사 C1: 진료 장면 와이드 16:9",
-            """
-            Ultra-realistic documentary-style photograph of an adult Korean woman receiving dental treatment in a modern Korean dental clinic.
-
-            Patient: An adult Korean woman lying horizontally on her back in a fully reclined dental chair. She wears a dark navy long-sleeved top and dark trousers, with a large green disposable dental bib covering her chest and abdomen. Her hands are gently clasped together over her lower abdomen. Her head rests on the dental chair headrest, and her mouth is open for treatment.
-
-            Dentist: A Korean female dentist with black hair tied back in a ponytail, wearing a white dental coat over dark navy scrubs, a white surgical mask, and white medical gloves. She is seated on a dental stool beside the patient's head, leaning forward with a focused expression while performing a dental procedure.
-
-            Treatment action: The dentist holds a realistic high-speed dental handpiece in one gloved hand and a dental suction instrument or mirror in the other. The instruments are positioned directly inside the patient's open mouth, with the working tips contacting the teeth. A bright dental examination light illuminates the patient's mouth. Both of the dentist's hands are clearly engaged in the procedure. The scene depicts an authentic, ongoing dental treatment rather than a posed consultation.
-
-            Camera and composition: A medium-wide horizontal photograph taken from a slightly elevated diagonal side angle, approximately 25–35 degrees above the patient's body. The camera is positioned beside the dental chair, showing the patient's body extending from the lower-left foreground toward the dentist on the right. The dentist's upper body, bent-forward working posture, both hands, the patient's green dental bib, and the treatment area are visible together. The patient's face is partially visible near the dentist's hands, without making the shot an extreme close-up.
-
-            Clinic environment: A realistic dental unit with an instrument delivery console, metallic dental instruments arranged on a white tray, suction hoses, a dental operating light overhead, cream-colored walls, and white storage cabinets. Authentic everyday Korean dental clinic interior, tidy but naturally used.
-
-            Photography: Natural handheld camera perspective, soft indoor clinical lighting, realistic shadows, slightly muted colors, authentic skin and fabric textures, subtle photographic imperfections, natural depth of field. Looks like an actual photograph captured during a dental appointment, not a staged advertisement. Highly photorealistic, anatomically accurate hands, realistic dental instruments, high detail, 16:9 landscape composition.
-
-            No illustration, no CGI, no exaggerated expressions, no text, no watermark.
-            """),
-        new("실사 C2: 얼굴 클로즈업 하이앵글 9:16",
-            """
-            Ultra-realistic close-up clinical photograph of a young adult Korean woman receiving dental treatment in a modern Korean dental clinic.
-
-            Patient and facial details: The patient is lying flat on her back in a reclining dental chair, with her head resting on a dark charcoal headrest. She has straight, dark brown hair framing her face, naturally textured fair skin, gently closed eyes, and relaxed eyebrows. Her mouth is opened very wide for dental examination, with both upper and lower teeth clearly visible, including several distinctive gold dental restorations on the upper molars. Her tongue is visible inside her open mouth.
-
-            Dental procedure: A Korean female dentist wearing pale medical gloves is actively examining the patient's lower teeth. A slender stainless-steel dental explorer is inserted inside the patient's mouth, with its tip touching a lower tooth. The instrument must visibly enter the oral cavity rather than merely hover near the lips.
-
-            Camera angle and composition: Tight close-up photograph taken from a high oblique angle, approximately 35–45 degrees above the patient's face. The patient's face fills most of the frame, with the open mouth near the center and the dentist's gloved hand entering from the right side.
-
-            Lighting and photographic style: Soft, warm-white clinical lighting illuminating the oral cavity and facial features. Realistic reflections on the stainless-steel instrument, natural skin pores, anatomically accurate teeth, shallow depth of field, softly blurred cream-colored clinic background. Authentic documentary-style healthcare photography, 4K quality.
-
-            Vertical portrait composition, 9:16 aspect ratio. No text, no watermark, no illustration, no CGI.
-            """),
-        new("실사 C3: 구강 내부 매크로 (골드 인레이)",
-            """
-            Ultra-realistic close-up intraoral dental photography, first-person patient POV, looking directly into the open mouth of a young Korean woman during a dental procedure.
-
-            The camera is positioned very close to the oral cavity, with the face mostly outside the frame. The mouth is held wide open and the upper and lower molars are clearly visible. Several posterior molars have realistic old gold inlay restorations, irregularly shaped gold-colored dental fillings embedded into the chewing surfaces, with natural variations in color, reflections, wear and slight staining around the restoration margins.
-
-            A Korean female dentist wearing sterile white medical gloves is performing the procedure, with dental instruments entering the mouth from above. A dental mirror and periodontal explorer are visible near the molars, while another gloved dental professional assists with suction.
-
-            Bright focused surgical dental light directly illuminates the oral cavity. Green sterile surgical drape surrounds the mouth. Realistic moist oral tissues, natural saliva reflections, pink gums, tongue partially visible, highly detailed tooth enamel and realistic dental anatomy.
-
-            Documentary medical photography, macro intraoral photography, realistic clinical lighting, shallow depth of field, photorealistic, 4K, no beauty retouching. Mouth and molars dominate the entire frame, minimal face visible, instruments partially entering from the edges of the image.
-
-            The molars must clearly show multiple existing gold inlay restorations, not gold crowns and not metallic braces.
-
-            No dentures, no dental implants, no braces, no silver fillings, no gold crowns, no deformed teeth, no extra teeth, no cartoon, no CGI, no illustration, no excessive blood, no gore, no wide shot of the dental clinic.
-            """),
-        new("실사 C4: 입술 당긴 하안면 매크로",
-            "Macro close-up photograph of a person's lower face, focusing tightly from the nostrils down to the chin. A finger gently pulls down the lower lip to clearly expose the teeth and gums. " +
-            "The mouth is slightly open, revealing natural anterior teeth alongside prominent metallic dental restorations on the posterior molars. " +
-            "Realistic wet gum tissue, natural tooth enamel texture, soft clinical lighting, shallow depth of field, raw unretouched medical photography style. ",
-            "", "뒤에 보철 종류를 적는다(예: gold crown on the lower right molars)."),
-        new("실사 C5: 캔디드 미드샷 (참고 이미지 기반)",
-            "A photorealistic, candid-style photo taken from a mid-ground angle, capturing an Asian female dentist performing a procedure on a patient in a modern dental clinic, based on the attached image. " +
-            "The dentist, wearing a white coat, blue scrubs, a blue medical mask, and white latex gloves, is positioned over the patient, holding a dental handpiece with her right hand in the patient's open mouth and a dental mirror with her left hand, intently focused on the patient's teeth. " +
-            "The Asian female patient is lying on the dental chair, eyes closed, with her mouth wide open, wearing a light blue dental bib. From the right edge of the frame, another figure, wearing blue scrubs and gloves, holds a suction tool. " +
-            "In the foreground on the left, other dental tools are neatly on a tray with a high-speed handpiece. Above them is a powerful dental light fixture. The background shows a clean clinic with a wooden-toned floor and dental equipment carts, all softly blurred. " +
-            "High resolution, detailed textures of gloves and skin, realistic color."),
-        new("실사 C6: 환자 시점 로우앵글",
-            """
-            환자 시점의 극단적인 로우 앵글(worms-eye view) 치과 진료실 사진.
-            피사체: 여성 치과의사. 흰색 일회용 접이식 마스크(주름이 있는 스타일) 착용. 의료용 라텍스 장갑을 낀 손.
-            환자의 입장에서 치과의사를 정면으로 올려다보는 시점. 치과의사의 얼굴이 중앙에 있고, 눈은 가려지지 않은 채 아래를 향해 직접 응시하고 있다.
-            장갑을 낀 오른손이 전경 상단 중앙과 우측에 크게 위치하여 작은 치과용 거울의 손잡이를 잡고 있다. 반대 손은 하이스피드 핸드피스를 자연스럽게 쥐고 있다.
-            치과 진료실 천장이 보이며 여러 개의 밝은 원형 매립형 LED 조명이 있다. 우측에는 크고 강력한 치과용 유닛 조명이 밝게 켜져 있어 따뜻한 빛과 뚜렷한 조명 플레어를 만든다.
-            고해상도, 사실적인 사진. 얕은 피사계 심도(전경의 손과 거울은 약간 흐리고 얼굴은 선명하게). 클로즈업.
-            """),
-        new("실사 C7: 탑다운 오버헤드",
-            "치과 진료실을 위에서 내려다본 탑다운 앵글의 초고화질 사진. 첨부한 사진의 환자가 치과 의자에 누워 입을 벌리고 있고, 위에서 내려오는 밝은 수술 조명이 환자의 얼굴을 비추고 있다. " +
-            "의사의 흰색 가운 소매와 조수의 네이비색 유니폼 소매가 보이며 의료진의 손이 환자의 구강 안팎에서 다양한 기구를 사용하여 섬세하게 작업하고 있다. " +
-            "치과용 드릴, 거울, 탐침 등이 입안에 들어가 있고, 환자의 머리 주변으로 치과용 제어 패널, 트레이, 기구들이 배치된 전문적이고 세밀한 장면."),
-        new("실사 C9: 충치 제거 구강 내부 (치과의사 POV)",
-            """
-            Ultra-realistic intraoral dental photograph from the dentist's first-person point of view, looking straight down into a patient's wide-open mouth during cavity removal.
-
-            Framing: extreme close-up — the open mouth, teeth and molars fill the entire frame; the face, eyes and nose are outside the frame, only the stretched lips and a little skin around them are visible. This is NOT a wide shot of the clinic and NOT a portrait of the dentist or the patient.
-
-            The treated tooth: a lower molar in the center of the frame with a clearly visible dark brown-black carious lesion in its chewing surface, surrounded by chalky white enamel. Part of the decay has already been drilled out, exposing a small prepared cavity.
-
-            Action: a white-gloved hand enters from the top-right holding a high-speed dental handpiece; its thin bur tip is inside the cavity, cutting away the brown decay, with a fine mist of cooling water spraying around the bur. Another gloved hand from the top-left holds a round dental mirror that pulls the cheek aside. A suction tip in the corner of the mouth removes the water.
-
-            Details: moist pink gums, tongue partly visible, realistic saliva and water droplets, anatomically correct number and shape of teeth, bright focused dental light, macro lens, shallow depth of field.
-
-            Documentary clinical photography, photorealistic, no beauty retouching. No text, no watermark, no excessive blood, no gore, no deformed or extra teeth, no braces.
-            """, "", "입안 장면: 인물 외모·복장 문장은 자동으로 빠진다(넓은 구도를 부르기 때문)."),
-        new("실사 C10: 의사 뒤 하이앵글 충치 치료 (의사 얼굴 없음)",
-            """
-            Ultra-realistic candid photograph of cavity treatment in a modern Korean dental clinic, taken from just behind and above the standing dentist, looking steeply down (about 50–60 degrees) at the fully reclined patient.
-
-            Framing: the dentist's torso, arms and gloved hands fill the right side of the frame; the dentist's head and face are cut off above the top edge of the frame. The patient's head lies on the headrest in the lower center, pointing toward the bottom-right of the frame, so the face is seen upside down from above with the chin toward the top-left; the patient's body and a light blue disposable bib extend toward the top-left.
-
-            The patient: a young Korean woman with long dark hair spread on the headrest, eyes squeezed shut and brows drawn together in a slight frown of discomfort, mouth opened wide.
-
-            Action: the dentist's upper gloved hand holds a slim silver high-speed handpiece with a thin bur angled down into the patient's mouth; the other gloved hand holds a round dental mirror inside the mouth and rests gently against the patient's cheek. One white-gloved hand of an assistant enters from the bottom-left corner holding a suction tip or air-water syringe. A fine mist of water spray is visible in the air near the dental unit.
-
-            The dentist wears a long-sleeved ivory isolation gown with elastic cuffs over dark scrubs and white latex gloves. Dental unit arms, hoses and the instrument console are softly blurred in the background, light gray chair upholstery.
-
-            Soft natural clinic lighting, shallow depth of field, authentic skin and glove textures, documentary style, not a staged advertisement. No text, no watermark, no excessive blood, no deformed hands or extra fingers.
-            """, "",
-            "의사·위생사 얼굴·머리 설정은 자동으로 빠진다(얼굴이 화면 밖이라). 뒤에 진료 부위나 환자 차이를 적는다.",
-            StaffFacesHidden: true),
-        new("웹툰: 충치 제거 입안 클로즈업",
-            "Korean webtoon panel, extreme close-up inside a patient's wide-open mouth seen from the dentist's eyes. A lower molar in the center has a dark brown cavity; " +
-            "the thin bur of a high-speed handpiece held by a white-gloved hand is drilling out the decay with a little spray of water, a dental mirror holds the cheek aside. " +
-            "The mouth fills the whole frame, no faces. ", "", "뒤에 대사·효과(예: 위잉~)를 적는다."),
-        new("실사 C8: 하이앵글 (짧은 한글)",
-            "사진 스타일, 고화질 실사. 위에서 아래로 내려다보는 하이앵글(탑뷰) 구도. 밝고 깨끗한 현대적인 치과 진료실. 화면 중앙의 치과 체어에 누워 입을 벌리고 진료를 받고 있는 젊은 여성 환자. " +
-            "화면 오른쪽에는 흰색 가운을 입고 라텍스 장갑을 낀 여성 치과의사가 스툴에 앉아 환자의 입안을 진찰하고 있음. 화면 우측 하단에는 치과용 장비 트레이가 일부 보임. 밝고 전문적인 병원 조명, 4k 해상도. "),
-
-        // --- 웹툰 ---
-        new("웹툰: 말풍선 초상 (안수연)",
-            "A young Korean female dentist with brown bob hair holds a dental drill and a dental mirror in the other hand. Her face and chest are in the center of the frame, looking straight at the camera. " +
-            "There is a speech bubble next to her with the text \"", "\" in Korean. Small Korean characters \"위잉~~\" are near the dental drill.",
-            "말풍선 대사를 입력한다."),
-        new("웹툰: 다음 컷", "첨부한 웹툰 컷의 다음 장면으로, 같은 인물과 화풍을 유지해서: ", "", "예: 치과의사가 진료 끝나고 마스크 내리는 장면"),
-
-        // --- 영상 ---
-        new("영상: 체어 하강 → 진료 시작",
-            """
-            치과의사가 진료를 시작하기 위해 마스크를 올리고 instrument bar에 버튼을 눌러서 리클라이너 치과 체어를 끝까지 내립니다.
-            카메라는 내려가는 체어를 따라가면서 top view로 천천히 바뀝니다. 버튼을 누르면서 대사는 "기대보실게요"라고 한다.
-            다 내려간 후에는 라이트로 환자 입안을 비추고 환자는 입을 최대한 크게 벌려서 진료 받을 준비를 하는 장면. 치과의사는 오른손에는 핸드피스를 자연스럽게 쥐고 왼손에는 덴탈 미러를 쥐고 있다.
-            치과의사 대사는 "충치 치료 시작 하겠습니다. 아 크게 해보세요 물 많이 나옵니다."가 나오고 카메라가 치과의사 시점 POV 환자 얼굴 시점으로 전환된다. 대화하는 언어는 한국어.
-            """),
-        new("영상: 충치 제거 (핸드피스 소리만)",
-            "첨부한 이미지가 움직이는 충치 치료 동영상. 핸드피스로 계속 충치를 제거하는 장면만. 하이스피드 핸드피스에는 버가 끼워져 있다. 소리는 하이스피드 핸드피스로 충치를 제거하는 소리만 들린다."),
-        new("영상: 이전 영상에 이어서", "이전 동영상의 마지막 장면에서 이어집니다. ", "", "예: 환자가 누워 있는 체어가 천천히 끝까지 내려갑니다."),
     ];
 
     // ---------- 도메인 규칙 (수정 요청을 반복하며 굳어진 것) ----------
@@ -774,29 +610,6 @@ public static class PromptLibrary
             "Set in a present-day South Korean dental clinic with Korean staff and patients.", false),
         new("글자·자막·워터마크 금지",
             "No text, no letters, no subtitles, no UI, no logos, no watermark.", true),
-    ];
-
-    // ---------- 수정 요청 칩 (이어서 보내기용) ----------
-
-    public static IReadOnlyList<string> EditChips { get; } =
-    [
-        "자막·UI·로고·워터마크 빼줘",
-        "줌아웃 30%",
-        "탑뷰로 바꿔줘",
-        "치과의사 시점 POV 환자 입안",
-        "환자 시점 로우앵글",
-        "ECU 클로즈업",
-        "입안만 꽉 차게, 충치 깎는 버 끝이 보이게",
-        "충치를 더 진한 갈색으로, 물 분사 보이게",
-        "환자가 입을 최대한 크게 벌리게",
-        "빨간 점 찍은 치아만 금니로",
-        "빨간색 칠한 부분 골드인레이로, 색은 자연스럽게",
-        "루페·고글 빼줘",
-        "치과의사 손과 기구 지워줘",
-        "웹툰 컷으로 바꿔줘",
-        "실사로 바꿔줘",
-        "가로 사진으로",
-        "이 이미지를 GIF 애니메이션으로 변환해 줘",
     ];
 
     public static IReadOnlyList<AspectRatio> AspectRatios { get; } =

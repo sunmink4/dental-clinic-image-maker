@@ -33,6 +33,8 @@ public static class DentalChart
         new("gold_crown", "금 크라운", "GC", "#E0B000", "a shiny full gold crown"),
         new("zirconia", "지르코니아 크라운", "Zr", "#F2F2F2", "a natural white zirconia crown"),
         new("pfm", "PFM (금속 테두리)", "PFM", "#B8B8B8", "a porcelain crown with a thin dark metal line at the gumline"),
+        new("metal_crown", "메탈 크라운", "MC", "#8A9099", "a full metal crown in dull dark silver-gray non-precious alloy, matte metallic with no tooth-colored porcelain"),
+        new("silver_crown", "실버 크라운 (기성관)", "SS", "#D0D6DC", "a shiny bright silver stainless steel crown (a prefabricated pediatric crown) fully covering the tooth"),
         new("root_canal", "신경치료 중", "RCT", "#7A4FA0", "an opening in the top for root canal treatment with a small endodontic file inserted"),
         new("temp", "임시 충전", "T", "#E8E0F0", "a white temporary filling"),
         new("implant", "임플란트", "Im", "#4F8FBF", "a dental implant with a crown"),

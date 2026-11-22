@@ -336,15 +336,76 @@
                                         Margin="0,4,0,0"
                                         ItemsSource="{Binding MouthSlots}"
                                         Style="{StaticResource SlotList}" />
-                                    <TextBlock Style="{StaticResource HintText}" Text="입안 클로즈업을 만든다. 치과의사·위생사와 카메라의 시점·앵글·샷 크기·머리 방향은 숨겨진다(손은 '손·기구'에서 고른다). 코~턱처럼 눈이 화면 밖인 범위는 환자 외모 문장도 뺀다." />
+                                    <TextBlock Style="{StaticResource HintText}" Text="입안 클로즈업을 만든다. 치과의사·위생사와 카메라의 시점·앵글·샷 크기는 숨겨진다(환자 머리 방향은 '카메라 구도'에서 고른다)(손은 '손·기구'에서 고른다). 코~턱처럼 눈이 화면 밖인 범위는 환자 외모 문장도 뺀다." />
                                 </StackPanel>
 
-                                <TextBlock Style="{StaticResource SectionLabel}" Text="장면 프리셋" />
-                                <ComboBox
-                                    ItemsSource="{Binding Scenes}"
-                                    SelectedItem="{Binding SelectedScene}"
-                                    Style="{StaticResource DarkComboBoxStyle}" />
-                                <TextBlock Style="{StaticResource HintText}" Text="{Binding SceneHint}" />
+                                <DockPanel Margin="0,14,0,6">
+                                    <Button
+                                        Width="60"
+                                        Height="24"
+                                        Margin="6,0,0,0"
+                                        Command="{Binding ClearReferencesCommand}"
+                                        Content="비우기"
+                                        DockPanel.Dock="Right"
+                                        FontSize="12"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                    <Button
+                                        Width="60"
+                                        Height="24"
+                                        Margin="6,0,0,0"
+                                        Command="{Binding AddReferencesCommand}"
+                                        Content="추가"
+                                        DockPanel.Dock="Right"
+                                        FontSize="12"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                    <Button
+                                        Width="80"
+                                        Height="24"
+                                        Command="{Binding PasteReferenceCommand}"
+                                        Content="붙여넣기"
+                                        DockPanel.Dock="Right"
+                                        FontSize="12"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        ToolTip="클립보드의 그림(캡처·이미지 복사)이나 복사한 파일을 첨부" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource SectionLabel}"
+                                        Margin="0"
+                                        Text="{Binding ReferenceLabel}" />
+                                </DockPanel>
+                                <ItemsControl ItemsSource="{Binding References}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Width="76"
+                                                Height="76"
+                                                Margin="0,0,6,6"
+                                                Background="#2D2D2D"
+                                                BorderBrush="#3C3C3C"
+                                                BorderThickness="1"
+                                                ToolTip="{Binding}">
+                                                <Grid>
+                                                    <Image Source="{Binding Converter={StaticResource SmallThumb}}" Stretch="UniformToFill" />
+                                                    <Button
+                                                        Width="20"
+                                                        Height="20"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Command="{Binding DataContext.RemoveReferenceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="✕"
+                                                        FontSize="10"
+                                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
 
                                 <Grid Margin="0,0,0,0">
                                     <Grid.ColumnDefinitions>
@@ -620,8 +681,9 @@
                                     Style="{StaticResource MultiLineBox}"
                                     Text="{Binding FreeText, UpdateSourceTrigger=PropertyChanged}" />
 
-                                <TextBlock Style="{StaticResource SectionLabel}" Text="수정 요청 (누르면 내용에 붙고 '이어서 보내기'가 켜짐)" />
-                                <ItemsControl ItemsSource="{Binding EditChips}">
+                                <TextBlock Style="{StaticResource SectionLabel}" Text="내 수정 요청 (누르면 내용에 붙고 '이어서 보내기'가 켜짐 · 우클릭 삭제)" />
+                                <TextBlock Style="{StaticResource HintText}" Text="내용 칸에 수정 요청을 적어 '이어서 보내기'로 보내면 여기에 등록된다." />
+                                <ItemsControl ItemsSource="{Binding EditRequests}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <WrapPanel />
@@ -633,7 +695,19 @@
                                                 Command="{Binding DataContext.AppendChipCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding}"
                                                 Content="{Binding}"
-                                                Style="{StaticResource ChipButton}" />
+                                                Style="{StaticResource ChipButton}">
+                                                <Button.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem
+                                                            Command="{Binding PlacementTarget.Tag.RemoveEditRequestCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Header="삭제" />
+                                                    </ContextMenu>
+                                                </Button.ContextMenu>
+                                                <Button.Tag>
+                                                    <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                                                </Button.Tag>
+                                            </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -667,77 +741,10 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
 
-                                <DockPanel Margin="0,14,0,6">
-                                    <Button
-                                        Width="60"
-                                        Height="24"
-                                        Margin="6,0,0,0"
-                                        Command="{Binding ClearReferencesCommand}"
-                                        Content="비우기"
-                                        DockPanel.Dock="Right"
-                                        FontSize="12"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
-                                    <Button
-                                        Width="60"
-                                        Height="24"
-                                        Margin="6,0,0,0"
-                                        Command="{Binding AddReferencesCommand}"
-                                        Content="추가"
-                                        DockPanel.Dock="Right"
-                                        FontSize="12"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
-                                    <Button
-                                        Width="80"
-                                        Height="24"
-                                        Command="{Binding PasteReferenceCommand}"
-                                        Content="붙여넣기"
-                                        DockPanel.Dock="Right"
-                                        FontSize="12"
-                                        Style="{StaticResource SecondaryButtonStyle}"
-                                        ToolTip="클립보드의 그림(캡처·이미지 복사)이나 복사한 파일을 첨부" />
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        Style="{StaticResource SectionLabel}"
-                                        Margin="0"
-                                        Text="참고 이미지 (첨부)" />
-                                </DockPanel>
-                                <ItemsControl ItemsSource="{Binding References}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border
-                                                Width="76"
-                                                Height="76"
-                                                Margin="0,0,6,6"
-                                                Background="#2D2D2D"
-                                                BorderBrush="#3C3C3C"
-                                                BorderThickness="1"
-                                                ToolTip="{Binding}">
-                                                <Grid>
-                                                    <Image Source="{Binding Converter={StaticResource SmallThumb}}" Stretch="UniformToFill" />
-                                                    <Button
-                                                        Width="20"
-                                                        Height="20"
-                                                        HorizontalAlignment="Right"
-                                                        VerticalAlignment="Top"
-                                                        Command="{Binding DataContext.RemoveReferenceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                        CommandParameter="{Binding}"
-                                                        Content="✕"
-                                                        FontSize="10"
-                                                        Style="{StaticResource SecondaryButtonStyle}" />
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
 
                                 <CheckBox
                                     Margin="0,10,0,0"
-                                    Content="지금 채팅에 이어서 보내기 (수정 요청 — 화풍·머리말 생략)"
+                                    Content="지금 채팅에 이어서 보내기 (수정 요청 — 머리말 생략, 적은 요청은 아래 칩으로 등록)"
                                     IsChecked="{Binding ContinueChat}"
                                     Style="{StaticResource DarkCheck}" />
 
