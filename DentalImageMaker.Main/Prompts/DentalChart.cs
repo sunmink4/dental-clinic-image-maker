@@ -97,7 +97,7 @@ public static class DentalChart
             return "";
 
         var sb = new StringBuilder(
-            "Dental chart of the patient's teeth (FDI numbering; left/right are the patient's own sides). Draw each listed tooth exactly as described; all other teeth are healthy and natural. ");
+            "Dental chart of the patient's teeth (FDI numbering; left/right are the patient's own sides). Draw each listed tooth exactly as described where it is visible from this view; all other teeth are healthy and natural. ");
         foreach (var g in groups)
         {
             var names = g.Select(t => EnglishName(t.Tooth)).ToList();

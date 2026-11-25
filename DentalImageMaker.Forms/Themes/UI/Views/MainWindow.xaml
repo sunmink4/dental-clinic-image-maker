@@ -511,7 +511,7 @@
                                         VerticalAlignment="Center"
                                         Style="{StaticResource SectionLabel}"
                                         Text="환자"
-                                        ToolTip="고른 칸만 프롬프트에 붙는다. 입안 클로즈업에서는 구강 상태만 붙는다." />
+                                        ToolTip="고른 칸만 프롬프트에 붙는다. 입안 클로즈업에서는 성별·나이만 붙는다." />
                                 </DockPanel>
                                 <ItemsControl
                                     Margin="0,4,0,0"

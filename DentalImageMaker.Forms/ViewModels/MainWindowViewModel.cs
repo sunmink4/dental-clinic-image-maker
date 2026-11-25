@@ -146,7 +146,6 @@ public partial class MainWindowViewModel : ObservableObject
 
     private const string Patient = "The patient";
 
-    private readonly OptionSlot _patientTeeth = new("patient.teeth", "구강 상태", PromptLibrary.PatientTeeth) { Group = "환자", Subject = Patient };
     private readonly OptionSlot _patientGender = new("patient.gender", "성별·나이", PromptLibrary.PatientGenders) { Group = "환자", Subject = Patient };
     private readonly OptionSlot _patientHair = new("patient.hair", "헤어", PromptLibrary.PatientHairs) { Group = "환자", Subject = Patient };
     private readonly OptionSlot _patientOutfit = new("patient.outfit", "옷", PromptLibrary.PatientOutfits) { Group = "환자", Subject = Patient };
@@ -160,7 +159,6 @@ public partial class MainWindowViewModel : ObservableObject
         _patientOutfit,
         new("patient.cover", "bib·덮개", PromptLibrary.PatientCovers) { Group = "환자", Subject = Patient },
         new("patient.state", "자세·표정", PromptLibrary.PatientStates) { Group = "환자", Subject = Patient },
-        _patientTeeth,
     ];
 
     private readonly OptionSlot _situation = new("treatment.situation", "상황 고르기", PromptLibrary.Situations) { Group = "치과 상황" };
@@ -413,7 +411,7 @@ public partial class MainWindowViewModel : ObservableObject
         new("camera.angle", "앵글", PromptLibrary.Angles) { Group = "카메라 구도" },
         new("camera.shot", "샷 크기", PromptLibrary.ShotSizes) { Group = "카메라 구도" },
         new("camera.head", "환자 머리 방향 (화면 기준)", PromptLibrary.HeadDirections) { Group = "카메라 구도" },
-        new("camera.headroll", "환자 머리 기울기 (롤)", PromptLibrary.HeadRolls) { Group = "카메라 구도" },
+        new("camera.headroll", "환자 고개 돌림 (롤, 좌우)", PromptLibrary.HeadRolls) { Group = "카메라 구도" },
         new("camera.lens", "렌즈·심도", PromptLibrary.Lenses) { Group = "카메라 구도" },
         new("camera.move", "카메라 움직임 (영상)", PromptLibrary.CameraMoves, videoOnly: true) { Group = "카메라 구도" },
     ];
@@ -458,15 +456,13 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>프롬프트에 붙일 인물·카메라 문장. 인물이 먼저, 카메라가 뒤.</summary>
     private IEnumerable<string> OptionSentences()
     {
-        // 상황·진료 내용·구강 상태를 먼저 둬야 모델이 '무엇을 그리는지'를 놓치지 않는다.
+        // 상황·진료 내용·치식을 먼저 둬야 모델이 '무엇을 그리는지'를 놓치지 않는다.
         // 숨긴 칸(지금 상황에 맞지 않는 칸)은 고른 값이 남아 있어도 넣지 않는다.
         // 입안 범위는 상황 바로 뒤에 둔다: 화면에 어디까지 들어오는지가 가장 먼저 정해져야 한다.
         foreach (var slot in SituationSlots.Concat(MouthSlots).Concat(TreatmentSlots).Where(s => s.IsVisible))
             yield return slot.PromptText;
         if (IncludePatient)
         {
-            if (_patientTeeth.IsVisible)
-                yield return _patientTeeth.PromptText;
             if (ShowToothChart)
                 yield return ToothChartSentence();
             // 입안 클로즈업에서도 성별·나이는 넣는다. 빼면 모델이 아무렇게나(흔히 남성으로) 그린다.
@@ -498,7 +494,7 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 // 첨부 이미지의 환자를 쓰면 헤어·옷은 사진 그대로 — 다른 묘사가 섞이면 옷이 바뀐다.
                 var fromReference = _patientGender.Selected.Key == PromptLibrary.PatientFromReferenceKey;
-                foreach (var slot in PatientSlots.Where(s => s != _patientTeeth && s.IsVisible))
+                foreach (var slot in PatientSlots.Where(s => s.IsVisible))
                 {
                     if (fromReference && (slot == _patientHair || slot == _patientOutfit))
                         continue;

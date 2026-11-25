@@ -252,19 +252,6 @@ public static class PromptLibrary
         new("pstate.sitting", "앉아서 상담", "{who} sits upright in the dental chair, mouth closed, listening to the dentist."),
     ];
 
-    public static IReadOnlyList<PromptOption> PatientTeeth { get; } =
-    [
-        new("", "지정 안 함", ""),
-        new("teeth.caries", "어금니 충치 (갈색·검은 점)", "Oral condition: the molars show visible tooth decay — brown and black carious spots in the grooves of the chewing surfaces."),
-        new("teeth.deep_caries", "깊은 충치 (구멍)", "Oral condition: one molar has a deep cavity, a dark brown-black hole of soft decayed dentin on the chewing surface, surrounded by chalky white enamel."),
-        new("teeth.gold", "금 인레이", "Oral condition: several molars have shiny gold inlays embedded in the middle of their chewing surfaces — small gold patches inside otherwise white teeth, clearly visible. Not gold crowns covering whole teeth, not braces."),
-        new("teeth.resin", "흰 레진 충전", "Oral condition: some molars have tooth-colored white resin fillings."),
-        new("teeth.amalgam", "은색 아말감", "Oral condition: some molars have old dark silver amalgam fillings."),
-        new("teeth.braces", "교정 장치", "Oral condition: {who} wears metal orthodontic braces with brackets and wires."),
-        new("teeth.tartar", "치석·잇몸 염증", "Oral condition: yellowish tartar along the gumline and slightly red, swollen gums."),
-        new("teeth.healthy", "건강한 치아", "Oral condition: clean, healthy white teeth and pink gums."),
-    ];
-
     // ---------- 치과 상황 ----------
     // '진료 중'이 아닌 상황(situ.* 중 TreatmentSituationKey 외)을 고르면 진료용 규칙이 빠진다.
     public const string TreatmentSituationKey = "situ.treatment";
@@ -294,7 +281,7 @@ public static class PromptLibrary
     // 상황마다 그 장면에 없는(또는 상황 문장과 부딪치는) 칸. 화면에서 숨기고 프롬프트에서도 뺀다.
     // 고른 값은 지우지 않으므로 '진료 중'으로 돌아오면 그대로 되살아난다.
     private static readonly string[] Mouth = ["mouth.frame", "mouth.view", "mouth.open", "mouth.hands"];
-    private static readonly string[] Oral = ["treatment.kind", "treatment.tooth", "treatment.detail", "patient.teeth", ToothChartId, .. Mouth];
+    private static readonly string[] Oral = ["treatment.kind", "treatment.tooth", "treatment.detail", ToothChartId, .. Mouth];
     private static readonly string[] OutOfChair = [.. Oral, "room.chair", "room.recline", "patient.cover", "patient.state"];
 
     public static IReadOnlyDictionary<string, string[]> SituationHiddenSlots { get; } = new Dictionary<string, string[]>
@@ -371,15 +358,27 @@ public static class PromptLibrary
         new("mframe.face_shoulder", "얼굴~어깨", "Framing: the patient's head and shoulders, the face with the wide-open mouth clearly visible; the top of the chest at the bottom edge."),
     ];
 
+    // 시계 방향은 치과 관례(머리 꼭대기 12시, 발 6시, 환자 오른쪽 9시)를 문장에 같이 적고, 화면에서 이마·턱이 어느 쪽인지도 숫자로 적는다.
     public static IReadOnlyList<PromptOption> MouthViews { get; } =
     [
         new("", "지정 안 함", ""),
         new("mview.front", "정면 (입과 마주 봄)", "Mouth view: straight-on frontal view looking directly into the open mouth, the face symmetrical in the frame."),
         new("mview.oblique", "사선 (비스듬히 옆에서)", "Mouth view: oblique three-quarter view from the patient's right side, about 45 degrees, so the mouth opening is seen at an angle and the molars on one side are visible."),
         new("mview.dentist_above", "위에서 (의사 자리)", "Mouth view: from above, from the dentist's seat at the patient's right side, looking down into the open mouth of the reclined patient."),
-        new("mview.head_12", "머리 쪽 12시 (얼굴 거꾸로)", "Mouth view: from behind the patient's head at the 12 o'clock position, looking down over the forehead into the mouth, so the face appears upside down with the chin at the top of the frame and the upper teeth closest to the camera."),
         new("mview.side", "측면 90°", "Mouth view: pure side profile at 90 degrees, showing the open mouth, lips and jaw line from the side."),
         new("mview.below", "아래에서 (턱 밑)", "Mouth view: low angle from below the chin, looking up toward the upper teeth and palate."),
+        new("mview.clock_1", "1시 · 머리 쪽 왼편", "Mouth view from the 1 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is standing behind the patient's head, slightly to the patient's left, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 150 degrees clockwise in the picture, NOT upright. The face appears almost upside down: the chin is near the top of the frame, higher than the forehead. The forehead and the top of the head point toward the bottom edge, slightly right of center of the frame and the chin points toward the top edge, slightly left of center of the frame."),
+        new("mview.clock_2", "2시 · 환자 왼쪽 위", "Mouth view from the 2 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is diagonally behind the head on the patient's left side, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 120 degrees clockwise in the picture, NOT upright. The forehead and the top of the head point toward the bottom-right corner of the frame and the chin points toward the top-left corner of the frame."),
+        new("mview.clock_3", "3시 · 환자 왼쪽", "Mouth view from the 3 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is directly at the patient's left side, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 90 degrees clockwise in the picture, NOT upright. The forehead and the top of the head point toward the right edge of the frame and the chin points toward the left edge of the frame."),
+        new("mview.clock_4", "4시 · 환자 왼쪽 아래", "Mouth view from the 4 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is diagonally toward the feet on the patient's left side, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 60 degrees clockwise in the picture, NOT upright. The forehead and the top of the head point toward the top-right corner of the frame and the chin points toward the bottom-left corner of the frame."),
+        new("mview.clock_5", "5시 · 발 쪽 왼편", "Mouth view from the 5 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is near the patient's chest, slightly to the patient's left, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 30 degrees clockwise in the picture, NOT upright. The forehead and the top of the head point toward the top edge, slightly right of center of the frame and the chin points toward the bottom edge, slightly left of center of the frame."),
+        new("mview.clock_6", "6시 · 발 쪽 (얼굴 바로 보임)", "Mouth view from the 6 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is near the patient's chest, facing the face, high above, looking down at the reclined patient's face and wide-open mouth. The face is upright in the picture, not rotated. The forehead and the top of the head point toward the top edge of the frame and the chin points toward the bottom edge of the frame."),
+        new("mview.clock_7", "7시 · 발 쪽 오른편", "Mouth view from the 7 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is near the patient's chest, slightly to the patient's right, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 30 degrees counter-clockwise in the picture, NOT upright. The forehead and the top of the head point toward the top edge, slightly left of center of the frame and the chin points toward the bottom edge, slightly right of center of the frame."),
+        new("mview.clock_8", "8시 · 환자 오른쪽 아래", "Mouth view from the 8 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is diagonally toward the feet on the patient's right side, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 60 degrees counter-clockwise in the picture, NOT upright. The forehead and the top of the head point toward the top-left corner of the frame and the chin points toward the bottom-right corner of the frame."),
+        new("mview.clock_9", "9시 · 환자 오른쪽", "Mouth view from the 9 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is directly at the patient's right side, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 90 degrees counter-clockwise in the picture, NOT upright. The forehead and the top of the head point toward the left edge of the frame and the chin points toward the right edge of the frame."),
+        new("mview.clock_10", "10시 · 환자 오른쪽 위", "Mouth view from the 10 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is diagonally behind the head on the patient's right side, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 120 degrees counter-clockwise in the picture, NOT upright. The forehead and the top of the head point toward the bottom-left corner of the frame and the chin points toward the top-right corner of the frame."),
+        new("mview.clock_11", "11시 · 머리 쪽 오른편", "Mouth view from the 11 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is standing behind the patient's head, slightly to the patient's right, high above, looking down at the reclined patient's face and wide-open mouth. The whole face is rotated about 150 degrees counter-clockwise in the picture, NOT upright. The face appears almost upside down: the chin is near the top of the frame, higher than the forehead. The forehead and the top of the head point toward the bottom edge, slightly left of center of the frame and the chin points toward the top edge, slightly right of center of the frame."),
+        new("mview.head_12", "12시 · 머리 뒤 (얼굴 거꾸로)", "Mouth view from the 12 o'clock position of the dental clock (12 = behind the top of the head, 6 = toward the feet, 9 = the patient's right, 3 = the patient's left): the camera is directly behind the top of the patient's head, high above, looking down at the reclined patient's face and wide-open mouth. The face is completely upside down in the picture, rotated 180 degrees. The forehead and the top of the head point toward the bottom edge of the frame and the chin points toward the top edge of the frame."),
     ];
 
     public static IReadOnlyList<PromptOption> MouthOpenings { get; } =
@@ -491,17 +490,19 @@ public static class PromptLibrary
         new("head.front", "정면 (카메라 쪽)", "The patient's face is turned straight toward the camera, head tilted back."),
     ];
 
-    // 롤: 얼굴 정면 축을 기준으로 머리를 어깨 쪽으로 갸웃 기울이는 각도. 화면 방향은 시점에 따라 뒤집히므로 환자 어깨 기준 + 숫자로 적는다.
+    // 롤: 정수리–목을 축으로 고개를 좌우로 돌리는 각도(어깨 쪽으로 갸웃 기울이는 것이 아니다). 화면 방향은 시점에 따라 뒤집히므로 환자 기준 + 숫자로 적는다.
     public static IReadOnlyList<PromptOption> HeadRolls { get; } =
     [
         new("", "지정 안 함", ""),
-        new("roll.0", "수평 (0°)", "Head roll: the patient's head is level, not tilted sideways at all — both eyes and both corners of the mouth are on one horizontal line relative to the face."),
-        new("roll.r15", "환자 오른쪽 어깨로 15°", "Head roll: the patient's head is tilted sideways about 15 degrees toward the patient's own right shoulder (ear moving toward the shoulder), a slight tilt; the face still looks forward."),
-        new("roll.r30", "환자 오른쪽 어깨로 30°", "Head roll: the patient's head is clearly tilted sideways about 30 degrees toward the patient's own right shoulder (right ear moving toward the right shoulder); the face still looks forward, the line between the eyes is slanted 30 degrees."),
-        new("roll.r45", "환자 오른쪽 어깨로 45°", "Head roll: the patient's head is strongly tilted sideways about 45 degrees toward the patient's own right shoulder, the right ear close to the right shoulder; the line between the eyes is slanted 45 degrees."),
-        new("roll.l15", "환자 왼쪽 어깨로 15°", "Head roll: the patient's head is tilted sideways about 15 degrees toward the patient's own left shoulder (ear moving toward the shoulder), a slight tilt; the face still looks forward."),
-        new("roll.l30", "환자 왼쪽 어깨로 30°", "Head roll: the patient's head is clearly tilted sideways about 30 degrees toward the patient's own left shoulder (left ear moving toward the left shoulder); the face still looks forward, the line between the eyes is slanted 30 degrees."),
-        new("roll.l45", "환자 왼쪽 어깨로 45°", "Head roll: the patient's head is strongly tilted sideways about 45 degrees toward the patient's own left shoulder, the left ear close to the left shoulder; the line between the eyes is slanted 45 degrees."),
+        new("roll.0", "정면 (0°)", "Head rotation: the patient's head faces straight ahead, not turned to either side — the nose points straight forward (straight up at the ceiling when lying down) and both cheeks are equally visible."),
+        new("roll.r15", "환자 오른쪽으로 15°", "Head rotation: the patient turns the head about 15 degrees toward the patient's own right side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead; the left cheek becomes more visible and the right cheek turns away. The head is turned, not tilted toward the shoulder."),
+        new("roll.r30", "환자 오른쪽으로 30°", "Head rotation: the patient turns the head about 30 degrees toward the patient's own right side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead; the left cheek becomes more visible and the right cheek turns away. The head is turned, not tilted toward the shoulder."),
+        new("roll.r45", "환자 오른쪽으로 45°", "Head rotation: the patient turns the head about 45 degrees toward the patient's own right side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead; the left cheek becomes more visible and the right cheek turns away. The head is turned, not tilted toward the shoulder."),
+        new("roll.r90", "환자 오른쪽으로 90°", "Head rotation: the patient turns the head about 90 degrees toward the patient's own right side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead — a full side profile, the left cheek and left ear face straight forward (up at the ceiling when lying down) and the right ear rests against the headrest. The head is turned, not tilted toward the shoulder."),
+        new("roll.l15", "환자 왼쪽으로 15°", "Head rotation: the patient turns the head about 15 degrees toward the patient's own left side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead; the right cheek becomes more visible and the left cheek turns away. The head is turned, not tilted toward the shoulder."),
+        new("roll.l30", "환자 왼쪽으로 30°", "Head rotation: the patient turns the head about 30 degrees toward the patient's own left side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead; the right cheek becomes more visible and the left cheek turns away. The head is turned, not tilted toward the shoulder."),
+        new("roll.l45", "환자 왼쪽으로 45°", "Head rotation: the patient turns the head about 45 degrees toward the patient's own left side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead; the right cheek becomes more visible and the left cheek turns away. The head is turned, not tilted toward the shoulder."),
+        new("roll.l90", "환자 왼쪽으로 90°", "Head rotation: the patient turns the head about 90 degrees toward the patient's own left side, rotating around the axis that runs from the top of the head down through the neck (like shaking the head no), from facing straight ahead — a full side profile, the right cheek and right ear face straight forward (up at the ceiling when lying down) and the left ear rests against the headrest. The head is turned, not tilted toward the shoulder."),
     ];
 
     public static IReadOnlyList<PromptOption> Lenses { get; } =
@@ -613,10 +614,8 @@ public static class PromptLibrary
             "The dental hygienist is not shown except for one white-gloved hand entering from the bottom-left corner of the frame, holding a suction tip or air-water syringe near the patient's mouth.", false, TreatmentOnly: true),
         new("골드 인레이 ≠ 크라운",
             "Gold inlays are embedded in the occlusal surfaces of the molars — not gold crowns, not braces.", false),
-        new("초록 소공포 + dental bib",
-            "The patient's face is covered by a green dental drape with an opening only around the nose and mouth, and a dental bib covers the chest.", false, TreatmentOnly: true),
-        new("눈 감고 입 최대한 벌림",
-            "The patient lies fully reclined with eyes closed and mouth opened as wide as possible.", true, TreatmentOnly: true),
+        new("치아는 고른 구도에서 보이는 만큼만",
+            "Show only the teeth that would naturally be visible from this camera angle and with this mouth opening. Do not twist the head, stretch the lips or distort the mouth to bring hidden teeth into view; teeth from the dental chart that are out of view simply stay hidden.", true),
         new("흰 라텍스 장갑 (마스크·루페는 인물 설정에서)",
             "Dental staff wear white latex gloves.", true),
         new("한국 치과, 한국인",
