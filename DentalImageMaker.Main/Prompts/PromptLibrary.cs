@@ -491,6 +491,19 @@ public static class PromptLibrary
         new("head.front", "정면 (카메라 쪽)", "The patient's face is turned straight toward the camera, head tilted back."),
     ];
 
+    // 롤: 얼굴 정면 축을 기준으로 머리를 어깨 쪽으로 갸웃 기울이는 각도. 화면 방향은 시점에 따라 뒤집히므로 환자 어깨 기준 + 숫자로 적는다.
+    public static IReadOnlyList<PromptOption> HeadRolls { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("roll.0", "수평 (0°)", "Head roll: the patient's head is level, not tilted sideways at all — both eyes and both corners of the mouth are on one horizontal line relative to the face."),
+        new("roll.r15", "환자 오른쪽 어깨로 15°", "Head roll: the patient's head is tilted sideways about 15 degrees toward the patient's own right shoulder (ear moving toward the shoulder), a slight tilt; the face still looks forward."),
+        new("roll.r30", "환자 오른쪽 어깨로 30°", "Head roll: the patient's head is clearly tilted sideways about 30 degrees toward the patient's own right shoulder (right ear moving toward the right shoulder); the face still looks forward, the line between the eyes is slanted 30 degrees."),
+        new("roll.r45", "환자 오른쪽 어깨로 45°", "Head roll: the patient's head is strongly tilted sideways about 45 degrees toward the patient's own right shoulder, the right ear close to the right shoulder; the line between the eyes is slanted 45 degrees."),
+        new("roll.l15", "환자 왼쪽 어깨로 15°", "Head roll: the patient's head is tilted sideways about 15 degrees toward the patient's own left shoulder (ear moving toward the shoulder), a slight tilt; the face still looks forward."),
+        new("roll.l30", "환자 왼쪽 어깨로 30°", "Head roll: the patient's head is clearly tilted sideways about 30 degrees toward the patient's own left shoulder (left ear moving toward the left shoulder); the face still looks forward, the line between the eyes is slanted 30 degrees."),
+        new("roll.l45", "환자 왼쪽 어깨로 45°", "Head roll: the patient's head is strongly tilted sideways about 45 degrees toward the patient's own left shoulder, the left ear close to the left shoulder; the line between the eyes is slanted 45 degrees."),
+    ];
+
     public static IReadOnlyList<PromptOption> Lenses { get; } =
     [
         new("", "지정 안 함", ""),

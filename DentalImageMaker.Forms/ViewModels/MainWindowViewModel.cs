@@ -413,6 +413,7 @@ public partial class MainWindowViewModel : ObservableObject
         new("camera.angle", "앵글", PromptLibrary.Angles) { Group = "카메라 구도" },
         new("camera.shot", "샷 크기", PromptLibrary.ShotSizes) { Group = "카메라 구도" },
         new("camera.head", "환자 머리 방향 (화면 기준)", PromptLibrary.HeadDirections) { Group = "카메라 구도" },
+        new("camera.headroll", "환자 머리 기울기 (롤)", PromptLibrary.HeadRolls) { Group = "카메라 구도" },
         new("camera.lens", "렌즈·심도", PromptLibrary.Lenses) { Group = "카메라 구도" },
         new("camera.move", "카메라 움직임 (영상)", PromptLibrary.CameraMoves, videoOnly: true) { Group = "카메라 구도" },
     ];
