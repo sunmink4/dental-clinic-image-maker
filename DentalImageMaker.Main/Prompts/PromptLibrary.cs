@@ -280,7 +280,7 @@ public static class PromptLibrary
 
     // 상황마다 그 장면에 없는(또는 상황 문장과 부딪치는) 칸. 화면에서 숨기고 프롬프트에서도 뺀다.
     // 고른 값은 지우지 않으므로 '진료 중'으로 돌아오면 그대로 되살아난다.
-    private static readonly string[] Mouth = ["mouth.frame", "mouth.view", "mouth.open", "mouth.hands"];
+    private static readonly string[] Mouth = ["mouth.frame", "mouth.view", "camera.head", "camera.headroll", "mouth.open", "mouth.cheek", "mouth.hands"];
     private static readonly string[] Oral = ["treatment.kind", "treatment.tooth", "treatment.detail", ToothChartId, .. Mouth];
     private static readonly string[] OutOfChair = [.. Oral, "room.chair", "room.recline", "patient.cover", "patient.state"];
 
@@ -388,6 +388,19 @@ public static class PromptLibrary
         new("mopen.medium", "보통", "Mouth opening: the mouth is open normally, upper and lower teeth visible with a gap of about two fingers."),
         new("mopen.wide", "크게", "Mouth opening: the mouth is opened wide, the tongue and the lower molars clearly visible."),
         new("mopen.max", "최대한 (목젖까지)", "Mouth opening: the mouth is opened as wide as physically possible — the jaw fully dropped, the tongue, the back molars and the uvula at the back of the throat are visible."),
+    ];
+
+    // 볼 당김: 치료 부위가 잘 보이게 볼 · 입술을 옆으로 젖히는 것. 무엇으로 당기는지와 어느 쪽인지를 함께 적어야 지켜진다.
+    public static IReadOnlyList<PromptOption> CheekRetractions { get; } =
+    [
+        new("", "지정 안 함", ""),
+        new("cheek.none", "당기지 않음", "Cheeks: nothing pulls the cheeks or lips — the lips and cheeks rest naturally around the open mouth."),
+        new("cheek.mirror_right", "미러로 환자 오른쪽 볼", "Cheek retraction: the back of a round dental mirror, held by a gloved hand, presses the patient's right cheek outward and away from the teeth, stretching the corner of the mouth so the right-side molars and gums are clearly exposed."),
+        new("cheek.mirror_left", "미러로 환자 왼쪽 볼", "Cheek retraction: the back of a round dental mirror, held by a gloved hand, presses the patient's left cheek outward and away from the teeth, stretching the corner of the mouth so the left-side molars and gums are clearly exposed."),
+        new("cheek.finger", "장갑 낀 손가락으로", "Cheek retraction: a gloved index finger hooks inside the corner of the patient's mouth and pulls the cheek outward to the side, stretching the lip so the back teeth on that side are clearly exposed."),
+        new("cheek.mirror_finger", "미러 + 손가락 (양쪽)", "Cheek retraction on both sides: on one side the back of a dental mirror pushes the cheek outward, on the other side a gloved finger pulls the corner of the mouth aside, so both cheeks are held away from the teeth and the whole dental arch is exposed."),
+        new("cheek.retractor", "개구기 (양쪽 볼 · 입술)", "Cheek retraction: a clear plastic C-shaped cheek and lip retractor sits in the mouth, stretching both corners of the mouth and both lips wide apart, so all the teeth and gums are fully exposed edge to edge."),
+        new("cheek.suction", "석션 팁으로 볼 · 혀", "Cheek retraction: a white saliva-ejector suction tip, held by a gloved hand, pushes the cheek and the tongue aside while removing water, keeping the treatment area open and visible."),
     ];
 
     public static IReadOnlyList<PromptOption> MouthHands { get; } =

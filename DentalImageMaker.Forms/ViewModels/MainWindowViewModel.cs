@@ -197,7 +197,7 @@ public partial class MainWindowViewModel : ObservableObject
         SaveCharacter();
     }
 
-    /// <summary>환자 입안 모드에서 숨기는 카메라 칸: 입안의 '보는 방향 · 범위'와 겹친다. 환자 머리 방향은 입안에서도 고른다(요청).</summary>
+    /// <summary>환자 입안 모드에서 숨기는 카메라 칸: 입안의 '보는 방향 · 범위'와 겹친다. 환자 머리 방향 · 고개 돌림은 입안 칸으로 옮겼다(요청).</summary>
     private static readonly string[] MouthModeHiddenCamera = ["camera.view", "camera.angle", "camera.shot"];
 
     /// <summary>
@@ -239,12 +239,15 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly OptionSlot _mouthFrame = new("mouth.frame", "입안 범위 (화면에 어디까지)", PromptLibrary.MouthFrames) { Group = "환자 입안" };
     private IReadOnlyList<OptionSlot>? _mouthSlots;
 
-    /// <summary>환자 입안 모드의 칸: 범위·방향·벌림·손. 이 모드에서는 카메라의 시점·앵글·샷·머리 방향을 숨긴다(겹치므로).</summary>
+    /// <summary>환자 입안 모드의 칸: 범위·방향·머리 방향·고개 돌림·벌림·볼 당김·손. 이 모드에서는 카메라의 시점·앵글·샷을 숨긴다(겹치므로).</summary>
     public IReadOnlyList<OptionSlot> MouthSlots => _mouthSlots ??=
     [
         _mouthFrame,
         new("mouth.view", "보는 방향", PromptLibrary.MouthViews) { Group = "환자 입안" },
+        new("camera.head", "환자 머리 방향 (화면 기준)", PromptLibrary.HeadDirections) { Group = "환자 입안" },
+        new("camera.headroll", "환자 고개 돌림 (롤, 좌우)", PromptLibrary.HeadRolls) { Group = "환자 입안" },
         new("mouth.open", "입 벌림", PromptLibrary.MouthOpenings) { Group = "환자 입안" },
+        new("mouth.cheek", "볼 당김", PromptLibrary.CheekRetractions) { Group = "환자 입안" },
         new("mouth.hands", "손·기구", PromptLibrary.MouthHands) { Group = "환자 입안" },
     ];
 
@@ -410,8 +413,6 @@ public partial class MainWindowViewModel : ObservableObject
         new("camera.view", "시점", PromptLibrary.Viewpoints) { Group = "카메라 구도" },
         new("camera.angle", "앵글", PromptLibrary.Angles) { Group = "카메라 구도" },
         new("camera.shot", "샷 크기", PromptLibrary.ShotSizes) { Group = "카메라 구도" },
-        new("camera.head", "환자 머리 방향 (화면 기준)", PromptLibrary.HeadDirections) { Group = "카메라 구도" },
-        new("camera.headroll", "환자 고개 돌림 (롤, 좌우)", PromptLibrary.HeadRolls) { Group = "카메라 구도" },
         new("camera.lens", "렌즈·심도", PromptLibrary.Lenses) { Group = "카메라 구도" },
         new("camera.move", "카메라 움직임 (영상)", PromptLibrary.CameraMoves, videoOnly: true) { Group = "카메라 구도" },
     ];
